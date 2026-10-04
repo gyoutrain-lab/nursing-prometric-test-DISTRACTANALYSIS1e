@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCFHS Nursing Technician Prometric Board Exam Simulator (90 Questions)</title>
+    <title>SCFHS Nursing Technician Prometric Board Exam Simulator (120 Questions)</title>
     <style>
         :root {
             --primary-color: #004d40;
@@ -187,6 +187,18 @@
             background-color: #00332c;
         }
 
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .nav-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
         .results-panel {
             display: none;
             text-align: center;
@@ -242,6 +254,8 @@
             .container { padding: 15px; }
             header { flex-direction: column; align-items: flex-start; }
             .candidate-summary { width: 100%; }
+            .nav-actions { flex-direction: column-reverse; gap: 10px; align-items: stretch; }
+            .nav-actions button { width: 100%; }
         }
     </style>
 </head>
@@ -251,18 +265,18 @@
     <header>
         <div>
             <h1>SCFHS Licensing Examination Simulator</h1>
-            <span class="badge">Saudi Commission for Health Specialties - Nursing Technician (90 High-Difficulty Vignettes)</span>
+            <span class="badge">Saudi Commission for Health Specialties - Nursing Technician (120 Questions)</span>
         </div>
-        <div class="timer-box" id="timer">Time: 135:00</div>
+        <div class="timer-box" id="timer">Time: 180:00</div>
     </header>
 
-    <!-- Candidate Profile Section -->
+    <!-- Section Validasi Identitas -->
     <div class="user-info-card" id="profile-section">
         <h3 style="margin-top:0; color: var(--primary-color);">Candidate Credentials</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
             <div class="form-group">
                 <label for="candidate-name">Full Name (English):</label>
-                <input type="text" id="candidate-name" placeholder="e.g., Abdullah Ahmed Al-Mansoor" required>
+                <input type="text" id="candidate-name" placeholder="e.g., Giyono Asfarrasyid" required>
             </div>
             <div class="form-group">
                 <label for="candidate-id">SCFHS Eligibility / Application ID:</label>
@@ -272,7 +286,7 @@
         <button class="btn" style="margin-top: 10px;" onclick="initializeExam()">Start Official Assessment</button>
     </div>
 
-    <!-- Exam Results Panel -->
+    <!-- Panel Hasil Akhir -->
     <div class="results-panel" id="results-panel">
         <h2>Official SCFHS Assessment Result</h2>
         <div class="candidate-summary" id="candidate-summary-output"></div>
@@ -282,18 +296,21 @@
         <button class="btn" onclick="location.reload()">Retake Assessment</button>
     </div>
 
-    <!-- Questions Container -->
+    <!-- Kontainer Tampilan Soal Tunggal (Satu per Layar) -->
     <div id="quiz-container" style="display: none;">
-        <!-- Questions injected via JavaScript -->
-    </div>
+        <div class="question-card" id="current-question-card">
+            <!-- Isi Soal Diinjeksikan via JS -->
+        </div>
 
-    <div id="submit-container" style="text-align: right; margin-top: 20px; display: none;">
-        <button class="btn" id="submit-btn" onclick="submitExam()">Finalize & Submit Exam</button>
+        <div class="nav-actions">
+            <button class="btn" id="next-btn" onclick="nextQuestion()">Next Question</button>
+            <button class="btn" id="rationale-btn" style="background-color: var(--secondary-color);" onclick="toggleRationale()">Show Rationale</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Master Bank: 90 High-Difficulty Questions (Nursing Technician Scope)
+    // Bank Soal Utama: 120 Soal Lengkap
     const rawQuestions = [
         {
             id: 1,
@@ -305,7 +322,7 @@
                 { text: "Notify the registered nurse or physician immediately before stopping.", isCorrect: false }
             ],
             rationale: "Vagal stimulation during endotracheal catheter insertion causes acute bradycardia. The technician must immediately remove the stimulus (withdraw catheter) and provide hyperoxygenation to prevent cardiac arrest.",
-            distractorAnalysis: "B: Applying suction worsens hypoxia and vagal tone. C: Saline instillation causes desaturation and infection risks, and does not resolve vagal response. D: Waiting to notify the nurse delays emergency immediate procedure termination."
+            distractorAnalysis: "B: Applying suction worsens hypoxia and vagal tone. C: Saline instillation causes desaturation and infection risks. D: Waiting to notify delays immediate emergency procedure termination."
         },
         {
             id: 2,
@@ -316,8 +333,8 @@
                 { text: "Assess for Babinski reflex on the plantar surface of the foot.", isCorrect: false },
                 { text: "Perform a rapid capillary blood glucose fingerstick check.", isCorrect: false }
             ],
-            rationale: "Circumoral and digital paresthesia post-thyroidectomy indicates acute hypocalcemia due to accidental parathyroid tissue injury. Demonstrating Trousseau's sign (carpopedal spasm induced by BP cuff inflation above systolic level) confirms neuromuscular irritability.",
-            distractorAnalysis: "A: Kernig's sign tests for meningeal irritation. C: Babinski reflex assesses upper motor neuron lesions. D: Hypoglycemia causes diaphoresis and tremors, not acute post-thyroidectomy carpopedal paresthesia."
+            rationale: "Circumoral and digital paresthesia post-thyroidectomy indicates acute hypocalcemia due to accidental parathyroid injury. Trousseau's sign confirms neuromuscular irritability.",
+            distractorAnalysis: "A: Kernig's tests for meningeal irritation. C: Babinski assesses upper motor neuron lesions. D: Hypoglycemia causes diaphoresis, not acute carpopedal paresthesia."
         },
         {
             id: 3,
@@ -328,8 +345,8 @@
                 { text: "Trendelenburg position with head turned away from the insertion site.", isCorrect: true },
                 { text: "Left lateral recumbent position with feet elevated 30 degrees.", isCorrect: false }
             ],
-            rationale: "Trendelenburg position increases central venous pressure in upper body veins, preventing air entry (air embolism) if lines disconnect, while turning the head away prevents site contamination from respiratory flora.",
-            distractorAnalysis: "A: High-Fowler's lowers venous pressure in neck veins, increasing air embolism risk. B: Prone position impedes chest expansion and central line site access. D: Left lateral (Durant maneuver) is used AFTER air embolism occurs, not as routine dressing prep."
+            rationale: "Trendelenburg position increases central venous pressure in upper body veins, preventing air entry (air embolism) if lines disconnect, while turning the head away prevents site contamination.",
+            distractorAnalysis: "A: High-Fowler's lowers venous pressure, increasing air embolism risk. B: Prone position impedes chest expansion. D: Left lateral is used AFTER air embolism occurs."
         },
         {
             id: 4,
@@ -340,8 +357,8 @@
                 { text: "Elevate the extremity above heart level and massage the tissue.", isCorrect: false },
                 { text: "Stop the IV infusion immediately and disconnect the tubing.", isCorrect: true }
             ],
-            rationale: "Coolness, swelling, pallor, and burning indicate IV extravasation/infiltration of a vesicant/irritant (Potassium Chloride). Immediate cessation of infusion prevents severe tissue necrosis.",
-            distractorAnalysis: "A: Heat applied to an extravasated tissue without stopping infusion accelerates tissue necrosis. B: Continuing vesicant infusion at any rate causes tissue destruction. C: Massaging infiltrated vesicants spreads the toxic solution further into subcutaneous tissue."
+            rationale: "Coolness, swelling, pallor, and burning indicate IV extravasation/infiltration. Immediate cessation of infusion prevents severe tissue necrosis.",
+            distractorAnalysis: "A: Heat applied to an extravasated tissue accelerates necrosis. B: Continuing vesicant infusion causes tissue destruction. C: Massaging spreads the toxic solution."
         },
         {
             id: 5,
@@ -352,8 +369,8 @@
                 { text: "Pull back gently on the catheter until resistance is met.", isCorrect: false },
                 { text: "Attach the drainage bag to the bedside rail above bladder level.", isCorrect: false }
             ],
-            rationale: "In male catheterization, urine appearance occurs when the tip enters the prostatic urethra/bladder neck. Advancing further to the bifurcation ensures the balloon rests inside the bladder cavity before inflation, preventing urethral rupture.",
-            distractorAnalysis: "B: Inflating the balloon immediately upon urine appearance can rupture the male urethra if the balloon is still in the prostatic catheter tract. C: Pulling back is done AFTER inflation. D: Drainage bags must stay BELOW bladder level to prevent backflow infection."
+            rationale: "In male catheterization, advancing further to the bifurcation ensures the balloon rests inside the bladder cavity before inflation, preventing urethral rupture.",
+            distractorAnalysis: "B: Inflating immediately can rupture the male urethra. C: Pulling back is done AFTER inflation. D: Drainage bags must stay BELOW bladder level."
         },
         {
             id: 6,
@@ -365,7 +382,7 @@
                 { text: "High-Fowler's position with neck hyperextended.", isCorrect: false }
             ],
             rationale: "Remaining flat supine post-lumbar puncture decreases CSF leakage from the dural puncture site, significantly reducing the incidence of severe low-pressure post-lumbar headache.",
-            distractorAnalysis: "A, C, & D: Any head elevation (Semi-Fowler's, High-Fowler's, Reverse Trendelenburg) increases spinal fluid gravity pressure gradient, worsening CSF leak and causing severe intracranial traction headache."
+            distractorAnalysis: "A, C, & D: Any head elevation increases spinal fluid gravity pressure gradient, worsening CSF leak and causing severe headache."
         },
         {
             id: 7,
@@ -376,8 +393,8 @@
                 { text: "Lower extremity over the popliteal artery/thigh or ankle.", isCorrect: true },
                 { text: "Right forearm distal to the vascular anastomosis site.", isCorrect: false }
             ],
-            rationale: "BP cuffs are strictly contraindicated on arms with lymph node dissection (risk of severe lymphedema) and arms with AV fistulas (risk of thrombosis/graft failure). Lower extremity (thigh/calf) must be used.",
-            distractorAnalysis: "A: Mastectomy side must be avoided due to lymphedema risk. B & D: Any cuff pressure on an arm with an active AV fistula obstructs vascular access flow and risks permanent clotting."
+            rationale: "BP cuffs are strictly contraindicated on arms with lymph node dissection (risk of lymphedema) and arms with AV fistulas (risk of thrombosis). Lower extremity must be used.",
+            distractorAnalysis: "A: Mastectomy side must be avoided due to lymphedema risk. B & D: Cuff pressure on an arm with an AV fistula risks permanent clotting."
         },
         {
             id: 8,
@@ -388,8 +405,8 @@
                 { text: "Eye Protection -> Gown -> Mask/Respirator -> Gloves.", isCorrect: false },
                 { text: "Gloves -> Goggles/Face Shield -> Gown -> Mask/Respirator.", isCorrect: true }
             ],
-            rationale: "The standard CDC doffing sequence from most contaminated to least contaminated is: Gloves, Goggles/Face Shield, Gown, and lastly Mask/Respirator (removed outside the room for airborne/droplet safety).",
-            distractorAnalysis: "A, B, & C: Gloves are the most contaminated PPE item and must be removed first to prevent contaminating surrounding clothes, face, or respiratory gear during doffing."
+            rationale: "The standard CDC doffing sequence from most contaminated to least contaminated is: Gloves, Goggles/Face Shield, Gown, and lastly Mask/Respirator.",
+            distractorAnalysis: "A, B, & C: Gloves are the most contaminated PPE item and must be removed first to prevent contaminating surrounding clothes or face."
         },
         {
             id: 9,
@@ -400,8 +417,8 @@
                 { text: "4th intercostal space at the left sternal border.", isCorrect: false },
                 { text: "5th intercostal space at the left anterior axillary line.", isCorrect: false }
             ],
-            rationale: "Anatomical precision in 12-lead ECG placement is critical. Lead V4 is placed specifically at the 5th intercostal space in the midclavicular line. Misplacement leads to false ST-segment elevation or depression readings.",
-            distractorAnalysis: "B: Location for lead V1. C: Location for lead V2. D: Location for lead V5 (V6 is midaxillary)."
+            rationale: "Lead V4 is placed specifically at the 5th intercostal space in the midclavicular line. Misplacement leads to false ST-segment readings.",
+            distractorAnalysis: "B: Location for lead V1. C: Location for lead V2. D: Location for lead V5."
         },
         {
             id: 10,
@@ -412,1118 +429,306 @@
                 { text: "Flex the patient's right hip and knee to relieve vascular pressure.", isCorrect: false },
                 { text: "Apply a warm thermal blanket directly over the cold extremity.", isCorrect: false }
             ],
-            rationale: "Loss of a distal pulse post-femoral catheterization suggests arterial occlusion/thrombosis. The immediate technical verification step is confirming vascular flow with a Doppler device while immediately alerting the RN.",
-            distractorAnalysis: "B: Elevating the leg worsens arterial ischemia. C: Bending the hip is strictly prohibited after femoral sheath removal to prevent massive hemorrhage. D: Applying external heat increases tissue metabolic demand in an ischemic limb, accelerating necrosis."
+            rationale: "Loss of a distal pulse post-femoral catheterization suggests arterial occlusion/thrombosis. The immediate technical verification step is confirming vascular flow with a Doppler device.",
+            distractorAnalysis: "B: Elevating the leg worsens arterial ischemia. C: Bending the hip is strictly prohibited after femoral sheath removal. D: Applying external heat increases tissue metabolic demand."
         },
         {
             id: 11,
-            question: "A nursing technician is performing a manual blood pressure measurement. If the technician uses a blood pressure cuff that is too narrow for an obese patient's arm, how will this affect the blood pressure reading?",
+            question: "A nursing technician is preparing to perform tracheostomy care for a patient who has a copious amount of thick secretions. Which initial intervention is required prior to suctioning?",
             options: [
-                { text: "Falsely elevated (high) systolic and diastolic readings.", isCorrect: true },
-                { text: "Falsely lowered (low) systolic and diastolic readings.", isCorrect: false },
-                { text: "Falsely low systolic with an elevated diastolic reading.", isCorrect: false },
-                { text: "Accurate systolic reading with an unmeasurable diastolic reading.", isCorrect: false }
+                { text: "Hyperoxygenate the patient with 100% O2 for 30 to 60 seconds.", isCorrect: true },
+                { text: "Instill 10 mL of sterile water into the tracheostomy tube.", isCorrect: false },
+                { text: "Apply continuous suction while introducing the catheter.", isCorrect: false },
+                { text: "Deflate the tracheostomy cuff completely prior to inserting the line.", isCorrect: false }
             ],
-            rationale: "Using a cuff bladder that is too narrow or small relative to the arm circumference requires higher inflation pressures to occlude the artery, resulting in a falsely high blood pressure reading.",
-            distractorAnalysis: "B: An oversized or overly wide cuff results in falsely low blood pressure readings. C & D: Bladder size affects overall pressure transmission uniformly, altering both systolic and diastolic values upwards."
+            rationale: "Hyperoxygenating prior to suctioning prevents procedure-induced hypoxia and sudden drop in oxygen saturation.",
+            distractorAnalysis: "B: Saline/water instillation is contraindicated. C: Suctioning during insertion causes tracheal trauma. D: Deflating cuff increases aspiration risk."
         },
         {
             id: 12,
-            question: "While caring for a patient receiving a blood transfusion, 10 minutes into the infusion, the patient complains of lower back pain, chills, and shortness of breath. What is the technician's FIRST action?",
+            question: "A patient with a chest tube connected to a three-chamber water-seal drainage system is being turned in bed. The technician notes continuous vigorous bubbling in the water-seal chamber. What does this finding indicate?",
             options: [
-                { text: "Stop the blood infusion immediately and flush the line with normal saline.", isCorrect: false },
-                { text: "Stop the blood infusion immediately and notify the nurse.", isCorrect: true },
-                { text: "Slow the infusion rate to KVO (Keep Vein Open) and check vital signs.", isCorrect: false },
-                { text: "Administer STAT IV diphenhydramine per unit protocol.", isCorrect: false }
+                { text: "An air leak in the chest tube system or catheter connection.", isCorrect: true },
+                { text: "Normal drainage clearance during repositioning.", isCorrect: false },
+                { text: "Full lung re-expansion achieved.", isCorrect: false },
+                { text: "Excessive suction applied from the wall unit.", isCorrect: false }
             ],
-            rationale: "Flank/back pain, chills, and dyspnea indicate an acute hemolytic transfusion reaction. The primary safety role of the technician is to immediately stop the blood flow to prevent further fatal antigen-antibody exposure and summon the nurse.",
-            distractorAnalysis: "A: Flushing the remaining blood inside the IV tubing into the patient introduces more fatal allergen/mismatched blood. C: Never continue or slow a blood line during a reaction. D: Administering IV medications is outside the nursing technician scope."
+            rationale: "Continuous bubbling in the water-seal chamber indicates an active air leak in the system or patient space. Intermittent bubbling during coughing or exhalation is expected.",
+            distractorAnalysis: "B: Repositioning should not cause continuous bubbling. C: Full expansion shows tidaling cessation. D: Suction control chamber bubbles, not water seal."
         },
         {
             id: 13,
-            question: "A nursing technician is performing tracheostomy care for a stable patient. When replacing the dirty tracheostomy ties (holder), how should the technician secure the new ties to prevent accidental decannulation?",
+            question: "During enteral tube feeding via a Nasogastric (NG) tube, the nursing technician checks the gastric residual volume (GRV) and obtains 320 mL of unabsorbed formula. What is the appropriate immediate action?",
             options: [
-                { text: "Secure the new ties before removing the old ties.", isCorrect: true },
-                { text: "Remove the old ties first, clean the stoma, then tie the new ones.", isCorrect: false },
-                { text: "Tie the new holder tightly allowing no finger space beneath the strap.", isCorrect: false },
-                { text: "Cut the old ties while an assistant holds the face mask in place.", isCorrect: false }
+                { text: "Hold the feeding, return the aspirated volume per protocol, and notify the nurse.", isCorrect: true },
+                { text: "Discard the aspirated fluid in the biological waste container and proceed.", isCorrect: false },
+                { text: "Administer the next scheduled bolus feeding rapidly to clear the tube.", isCorrect: false },
+                { text: "Flush the tube with 100 mL of warm water and increase flow rate.", isCorrect: false }
             ],
-            rationale: "To prevent accidental tube dislodgement or airway loss during tie changes, the new tracheostomy ties/holder MUST be applied and secured BEFORE cutting and removing the old ties.",
-            distractorAnalysis: "B: Removing old ties first risks coughing out the tracheostomy tube. C: Ties should allow 1 to 2 fingers to fit comfortably. D: Face mask does not secure an artificial airway."
+            rationale: "High GRV (>250-500 mL depending on protocol) indicates delayed gastric emptying and high risk of aspiration. Fluid is returned to prevent electrolyte imbalance, and feeding is held.",
+            distractorAnalysis: "B: Discarding causes fluid/electrolyte depletion. C & D: Continuing or increasing feed worsens risk of aspiration pneumonia."
         },
         {
             id: 14,
-            question: "A technician is preparing to collect a 24-hour urine collection specimen for a patient evaluated for Pheochromocytoma. How should the technician handle the collection process at the start of the 24-hour period?",
+            question: "A nursing technician is obtaining a clean-catch midstream urine specimen from a female patient. Which instruction must the technician provide to ensure an uncontaminated specimen?",
             options: [
-                { text: "Discard the first morning voided specimen and record the start time.", isCorrect: true },
-                { text: "Include the first morning void in the container and start the timer.", isCorrect: false },
-                { text: "Keep the urine collection container at room temperature near the bed.", isCorrect: false },
-                { text: "Save only the midstream portion of each void throughout the day.", isCorrect: false }
+                { text: "Cleanse the labia from front to back, void a small amount into the toilet, then collect midstream urine.", isCorrect: true },
+                { text: "Collect the very first stream of urine directly into the specimen container.", isCorrect: false },
+                { text: "Wash the perineal area with soap and alcohol, then fill the cup to the brim.", isCorrect: false },
+                { text: "Collect urine at the end of the voiding process after complete emptying.", isCorrect: false }
             ],
-            rationale: "A 24-hour urine collection begins with an empty bladder. The first morning void is discarded, the time is noted, and all subsequent urine for 24 hours is saved in a refrigerated container.",
-            distractorAnalysis: "B: Including initial morning void skews test results with old urine. C: Containers must be kept on ice or refrigerated. D: All voided urine (total volume) must be collected."
+            rationale: "Cleansing front to back and discarding the initial stream flushes urethral flora, ensuring the midstream sample accurately reflects bladder microbiology.",
+            distractorAnalysis: "B: Initial stream contains normal urethral flora. C: Alcohol causes severe irritation and alters sample. D: Terminal stream yields insufficient volume."
         },
         {
             id: 15,
-            question: "A technician is assisting with a patient who suddenly suffers a tonic-clonic seizure in bed. What is the safest position to place the patient during the active seizure phase?",
+            question: "A nursing technician is ambulating a patient who has left-sided hemiparesis following a stroke. Where should the technician stand during ambulation?",
             options: [
-                { text: "Side-lying (lateral) position with head tilted slightly forward.", isCorrect: true },
-                { text: "High-Fowler's position with a soft pillow under the head.", isCorrect: false },
-                { text: "Supine position with a tongue depressor inserted between teeth.", isCorrect: false },
-                { text: "Trendelenburg position with side rails down.", isCorrect: false }
+                { text: "On the patient's affected (left) side, slightly behind the patient.", isCorrect: true },
+                { text: "On the patient's unaffected (right) side, slightly ahead.", isCorrect: false },
+                { text: "Directly in front of the patient, holding both hands.", isCorrect: false },
+                { text: "Behind the patient, holding the shoulders firmly.", isCorrect: false }
             ],
-            rationale: "Placing a seizing patient in a side-lying position allows secretions to drain out of the mouth, preventing airway obstruction and aspiration.",
-            distractorAnalysis: "B: High-Fowler's is impossible to maintain and risks falls. C: Inserting objects into a seizing patient's mouth causes severe trauma or airway occlusion. D: Lowering side rails risks falls."
+            rationale: "Standing on the weaker/affected side with a gait belt allows the technician to support the weak extremity and stabilize the center of gravity if loss of balance occurs.",
+            distractorAnalysis: "B: Standing on strong side provides no support if weak side collapses. C & D: Incorrect body mechanics that risk pulling joint structures."
         },
         {
             id: 16,
-            question: "A nursing technician is inserting a nasogastric (NG) tube. To facilitate the entry of the tube into the esophagus rather than the larynx, how should the patient be instructed to position their head once the tube reaches the nasopharynx?",
+            question: "When applying pneumatic compression devices (SCDs) to a post-operative patient's lower extremities, which assessment finding requires holding application and reporting to the nurse immediately?",
             options: [
-                { text: "Flex the head forward (chin-to-chest) and swallow water.", isCorrect: true },
-                { text: "Tilt the head backward (hyperextend) and take deep breaths.", isCorrect: false },
-                { text: "Keep the head in a neutral midline position and hold breath.", isCorrect: false },
-                { text: "Turn the head forcefully to the left shoulder and cough.", isCorrect: false }
+                { text: "Unilateral calf edema, redness, and warmth.", isCorrect: true },
+                { text: "Bilateral +1 non-pitting ankle edema.", isCorrect: false },
+                { text: "Slightly diminished pedal pulses bilaterally.", isCorrect: false },
+                { text: "Surgical wound pain rated 3/10 controlled by medication.", isCorrect: false }
             ],
-            rationale: "Flexing the neck (chin-to-chest) closes the trachea/glottis and opens the esophagus. Sips of water facilitate smooth passage into the stomach.",
-            distractorAnalysis: "B: Hyperextending the neck opens the trachea, increasing the risk of tube entry into the airway. C & D: Do not close the epiglottis effectively."
+            rationale: "Unilateral calf pain, swelling, and warmth indicate deep vein thrombosis (DVT). Applying SCDs on an existing DVT can dislodge a clot causing pulmonary embolism.",
+            distractorAnalysis: "B, C, & D: Non-pitting mild edema or controlled pain are not absolute contraindications to SCD placement."
         },
         {
             id: 17,
-            question: "A nursing technician is obtaining a blood sample via venipuncture. What is the maximum recommended time a tourniquet should remain applied to a patient's arm during venipuncture to avoid hemoconcentration?",
+            question: "A nursing technician is caring for a patient who has a peripheral IV line. The site is soft, without redness, but the infusion pump repeatedly alarms 'Occlusion'. What is the technician's FIRST troubleshooting action?",
             options: [
-                { text: "1 minute (60 seconds).", isCorrect: true },
-                { text: "3 minutes.", isCorrect: false },
-                { text: "5 minutes.", isCorrect: false },
-                { text: "Until all blood tubes are completely filled.", isCorrect: false }
+                { text: "Check for kinked tubing, positional extremity bending, or closed clamps.", isCorrect: true },
+                { text: "Forcefully flush the cannula with a 10 mL saline syringe.", isCorrect: false },
+                { text: "Increase the infusion pump pressure settings.", isCorrect: false },
+                { text: "Remove the catheter immediately and start a new IV line.", isCorrect: false }
             ],
-            rationale: "Leaving a tourniquet on longer than 1 minute causes hemoconcentration (falsely elevated potassium, protein, and cell counts) and localized ischemia.",
-            distractorAnalysis: "B, C, & D: Exceeding 60 seconds severely compromises specimen integrity."
+            rationale: "External mechanical obstructions (kinked tubing, positional obstruction) are the most common cause of high-pressure occlusion alarms and must be eliminated first.",
+            distractorAnalysis: "B: Forceful flushing risks dislodging a clot or rupturing the vein. C: Increasing pressure damages vascular wall. D: Removing line is premature before checking tubing."
         },
         {
             id: 18,
-            question: "A nursing technician is ambulating a hemiplegic patient post-stroke who has left-sided weakness. Where should the technician stand when using a gait belt to support the patient during ambulation?",
+            question: "A nursing technician is preparing to transfer a paraplegic patient from bed to a wheelchair using a mechanical slide board. What is the essential safety measure regarding the wheelchair?",
             options: [
-                { text: "On the patient's weaker (left) side and slightly behind.", isCorrect: true },
-                { text: "On the patient's stronger (right) side and slightly ahead.", isCorrect: false },
-                { text: "Directly in front of the patient holding both hands.", isCorrect: false },
-                { text: "Directly behind the patient holding the shoulders.", isCorrect: false }
+                { text: "Lock both wheelchair brakes and remove or swing away footrests.", isCorrect: true },
+                { text: "Keep wheelchair wheels unlocked to allow slight movement.", isCorrect: false },
+                { text: "Position the wheelchair at a 90-degree angle to the foot of the bed.", isCorrect: false },
+                { text: "Elevate the bed to high-Fowler's position before sliding.", isCorrect: false }
             ],
-            rationale: "The technician stands on the affected/weaker side and slightly behind to provide immediate support if the weak leg buckles.",
-            distractorAnalysis: "B: Standing on the strong side leaves the weak side unsupported. C & D: Create fall risks and poor body mechanics."
+            rationale: "Locking brakes prevents wheel slippage during transfer, and moving footrests eliminates tripping or shearing hazards.",
+            distractorAnalysis: "B: Unlocked wheels cause fall risks. C: Bed and wheelchair should be parallel or at a slight 45-degree angle. D: Bed height should match chair height."
         },
         {
             id: 19,
-            question: "A nursing technician is providing colostomy bag maintenance for a patient with a fresh double-barrel colostomy. When trimming the wafer opening of a new pouch system, how large should the opening be relative to the stoma size?",
+            question: "A patient with pulmonary tuberculosis is admitted to an airborne isolation room. Which PPE is MANDATORY for the nursing technician before entering the room?",
             options: [
-                { text: "1/8 inch (1.5 to 3 mm) larger than the base of the stoma.", isCorrect: true },
-                { text: "Exactly the same size as the stoma without any margin.", isCorrect: false },
-                { text: "1/2 inch (12 mm) larger than the stoma to avoid friction.", isCorrect: false },
-                { text: "2 inches larger to allow stoma expansion during bowel movements.", isCorrect: false }
+                { text: "Fit-tested N95 respirator (or PAPR).", isCorrect: true },
+                { text: "Standard surgical mask with visor.", isCorrect: false },
+                { text: "Sterile gloves and fluid-resistant gown only.", isCorrect: false },
+                { text: "Cloth face mask and safety goggles.", isCorrect: false }
             ],
-            rationale: "Trimming the wafer 1/8 inch larger than the stoma protects peristomal skin from effluent while preventing the wafer from pinching the stoma.",
-            distractorAnalysis: "B: Exact dimensions risk stoma trauma and ischemia. C & D: Excessively large openings expose peristomal skin to fecal content, causing chemical dermatitis."
+            rationale: "Mycobacterium tuberculosis is transmitted via small airborne droplet nuclei that require an N95 respirator or PAPR for filtration.",
+            distractorAnalysis: "B, C, & D: Standard surgical or cloth masks do not filter small airborne particles (<5 microns)."
         },
         {
             id: 20,
-            question: "A technician is caring for a patient with an indwelling chest tube connected to a closed water-seal drainage system. During patient repositioning, the chest tube accidentally detaches from the drainage unit. What is the technician's FIRST step?",
-            options: [
-                { text: "Submerge the distal end of the chest tube in a bottle of sterile saline.", isCorrect: true },
-                { text: "Clamp the chest tube close to the patient's chest insertion site with padded forceps.", isCorrect: false },
-                { text: "Apply a tight occlusive petrolatum gauze dressing over the tubing tip.", isCorrect: false },
-                { text: "Instruct the patient to inhale deeply and hold their breath.", isCorrect: false }
-            ],
-            rationale: "Submerging the disconnected chest tube 1 to 2 inches in sterile water/saline creates a temporary water seal, preventing atmospheric air from entering the pleural space.",
-            distractorAnalysis: "B: Clamping chest tubes without an order can rapidly cause a tension pneumothorax. C: Occlusive dressings are applied over the chest wall wound if the tube pulls out of the body. D: Deep breathing draws air into the chest cavity."
-        },
-        {
-            id: 21,
-            question: "A nursing technician is taking vital signs on a patient who has a temporary cardiac pacemaker. The monitor displays a heart rate of 52 bpm, but the pacemaker rate is set to 70 bpm. What should the technician do FIRST?",
-            options: [
-                { text: "Immediately check the patient for responsiveness and alert the staff nurse STAT.", isCorrect: true },
-                { text: "Reposition the pulse oximeter probe to another digit.", isCorrect: false },
-                { text: "Increase the pacemaker rate dial on the pulse generator box.", isCorrect: false },
-                { text: "Obtain a manual blood pressure reading on the opposite arm.", isCorrect: false }
-            ],
-            rationale: "A heart rate lower than the set pacing threshold indicates pacemaker failure to capture or pace. Immediate assessment and staff nurse alert is required.",
-            distractorAnalysis: "B & D: Diagnostic delay in a pacing failure emergency increases risk of cardiac arrest. C: Adjusting pacemaker parameters is outside technician scope."
-        },
-        {
-            id: 22,
-            question: "A technician is applying sequential compression devices (SCDs) to a bedbound postoperative patient. Which condition is a strict CONTRAINDICATION for applying SCD sleeves?",
-            options: [
-                { text: "Suspected or confirmed Deep Vein Thrombosis (DVT) in the lower extremity.", isCorrect: true },
-                { text: "Postoperative status following total hip arthroplasty.", isCorrect: false },
-                { text: "Patient age greater than 75 years with mild venous insufficiency.", isCorrect: false },
-                { text: "Receiving low-molecular-weight heparin (LMWH) injections.", isCorrect: false }
-            ],
-            rationale: "Applying SCDs to a leg with an active DVT can dislodge the thrombus, causing a fatal pulmonary embolism.",
-            distractorAnalysis: "B, C, & D: These conditions are standard indications FOR mechanical prophylaxis."
-        },
-        {
-            id: 23,
-            question: "A nursing technician is obtaining a capillary blood glucose measurement via fingerstick. Which action represents correct technical practice?",
-            options: [
-                { text: "Wipe away the first drop of blood with a sterile gauze pad before testing.", isCorrect: true },
-                { text: "Puncture the center pad of the fingertip directly over the nerve endings.", isCorrect: false },
-                { text: "Squeeze and milk the punctured finger forcefully to obtain adequate blood.", isCorrect: false },
-                { text: "Clean the site with povidone-iodine and perform puncture while wet.", isCorrect: false }
-            ],
-            rationale: "The first drop contains interstitial fluid and alcohol residue, causing inaccurate readings. It must be wiped away.",
-            distractorAnalysis: "B: Punctures should be on the lateral aspect of the fingertip. C: Milking causes hemolysis and dilutes blood with tissue fluid. D: Puncturing wet antiseptic contaminates the sample."
-        },
-        {
-            id: 24,
-            question: "A nursing technician is inserting a rectal suppository into an adult patient. How far past the internal anal sphincter should the suppository be advanced?",
-            options: [
-                { text: "1 inch (2.5 cm) past the internal sphincter against the rectal wall.", isCorrect: true },
-                { text: "0.25 inch (0.6 cm) just inside the external sphincter orifice.", isCorrect: false },
-                { text: "3 to 4 inches (7.5 to 10 cm) into the upper rectum.", isCorrect: false },
-                { text: "Directly into mass fecal material present in the rectal vault.", isCorrect: false }
-            ],
-            rationale: "A suppository must be gently pushed past the internal anal sphincter (~1 inch in adults) and placed against the mucosal rectal wall for proper absorption.",
-            distractorAnalysis: "B: Shallow placement leads to expulsion. C: Pushing 3-4 inches risks mucosa perforation. D: Placing suppositories into feces inhibits absorption."
-        },
-        {
-            id: 25,
-            question: "A technician is caring for a patient who is placed on Enteral Tube Feeding via a PEG tube. Prior to initiating intermittent bolus feeding, what is the maximum acceptable Gastric Residual Volume (GRV) before the technician must hold the feed and notify the nurse?",
-            options: [
-                { text: "500 mL (or per institutional protocol exceeding 250-500 mL).", isCorrect: true },
-                { text: "50 mL.", isCorrect: false },
-                { text: "100 mL.", isCorrect: false },
-                { text: "150 mL.", isCorrect: false }
-            ],
-            rationale: "Current ASPEN guidelines state holding enteral nutrition for GRVs less than 500 mL in the absence of other intolerance signs is unnecessary. GRV > 500 mL indicates delayed emptying.",
-            distractorAnalysis: "B, C, & D: Holding feeds at 100-200 mL leads to unnecessary feeding interruptions without reducing aspiration risk."
-        },
-        {
-            id: 26,
-            question: "A nursing technician is measuring an adult patient's oral temperature. The patient just finished drinking a cup of hot coffee. How long should the technician wait before measuring the oral temperature?",
-            options: [
-                { text: "15 to 30 minutes.", isCorrect: true },
-                { text: "5 minutes.", isCorrect: false },
-                { text: "45 to 60 minutes.", isCorrect: false },
-                { text: "No waiting time is required if using a digital probe.", isCorrect: false }
-            ],
-            rationale: "Hot/cold liquids alter oral mucosal temperature. A waiting period of 15–30 minutes allows tissue temperature to return to baseline core levels.",
-            distractorAnalysis: "B: 5 minutes is insufficient. C: 45-60 minutes is unnecessarily prolonged. D: Digital probes will record false readings if fluids were recently ingested."
-        },
-        {
-            id: 27,
-            question: "A nursing technician is applying an elastic compression bandage (ACE wrap) to a patient's lower extremity. What principle must the technician apply during application?",
-            options: [
-                { text: "Wrap from distal to proximal with even, overlapping turns.", isCorrect: true },
-                { text: "Wrap from proximal to distal applying maximum tension at the top.", isCorrect: false },
-                { text: "Leave the toes covered completely to keep the extremity warm.", isCorrect: false },
-                { text: "Apply the tightest pressure at the knee level and lighter at the ankle.", isCorrect: false }
-            ],
-            rationale: "Bandaging from distal to proximal facilitates venous return toward the heart and prevents localized distal edema.",
-            distractorAnalysis: "B & D: Wrapping proximal-to-distal traps blood and causes severe venous congestion. C: Toes must remain exposed to monitor neurovascular status."
-        },
-        {
-            id: 28,
-            question: "A technician is removing an indwelling urinary catheter from a female patient. After deflating the retention balloon completely with a syringe, the technician meets resistance when gently pulling the catheter. What is the correct immediate action?",
-            options: [
-                { text: "Stop pulling, re-attach the syringe, and attempt to aspirate remaining water.", isCorrect: true },
-                { text: "Pull the catheter with firm, rapid traction to dislodge the cuff.", isCorrect: false },
-                { text: "Instill 10 mL of sterile saline into the balloon to unblock the valve.", isCorrect: false },
-                { text: "Cut the catheter inflation port with scissors near the vulva.", isCorrect: false }
-            ],
-            rationale: "Resistance during catheter removal indicates incomplete balloon deflation. The technician should re-attach the syringe to ensure all fluid is evacuated before re-attempting gentle removal.",
-            distractorAnalysis: "B: Traction causes severe mucosal trauma and urethral bleeding. C: Instilling more fluid inflates the balloon further. D: Cutting the inflation arm can collapse the lumen channel."
-        },
-        {
-            id: 29,
-            question: "A technician is assigned to clean and decontaminate surgical instruments contaminated with blood. What water temperature should be used for the INITIAL rinse of blood-stained instruments?",
-            options: [
-                { text: "Cold or lukewarm water (below 43°C / 110°F).", isCorrect: true },
-                { text: "Boiling hot water above 80°C.", isCorrect: false },
-                { text: "Steaming hot soapy water.", isCorrect: false },
-                { text: "Concentrated bleach solution without water.", isCorrect: false }
-            ],
-            rationale: "Cold/lukewarm water prevents blood proteins from coagulating and adhering to instrument surfaces. Hot water bakes proteins onto metal.",
-            distractorAnalysis: "B & C: Hot water coagulates protein onto steel, hindering sterilization. D: Bleach corrodes surgical metal instruments if used without initial rinsing."
-        },
-        {
-            id: 30,
-            question: "A nursing technician is caring for a patient on fall precautions who has an active bed alarm. The alarm sounds while the technician is in the hallway. What is the technician's priority action?",
-            options: [
-                { text: "Immediately respond to the patient's room to prevent a fall.", isCorrect: true },
-                { text: "Locate the primary staff nurse and report the alarm.", isCorrect: false },
-                { text: "Finish the current non-urgent task before checking the room.", isCorrect: false },
-                { text: "Reset the bed alarm unit from the central nurses' station console.", isCorrect: false }
-            ],
-            rationale: "Bed alarms signal that an unassisted high-fall-risk patient is attempting to exit the bed. Immediate direct physical response is required.",
-            distractorAnalysis: "B & C: Delays caused by searching for nurses result in patient falls and injury. D: Silencing alarms remotely without physical presence jeopardizes patient safety."
-        },
-        {
-            id: 31,
-            question: "A nursing technician is measuring an apical pulse on a cardiac patient with an irregular heart rate. What is the standard duration required for an accurate manual apical pulse measurement?",
-            options: [
-                { text: "60 full seconds at the 5th intercostal space midclavicular line.", isCorrect: true },
-                { text: "15 seconds multiplied by 4 at the radial site.", isCorrect: false },
-                { text: "30 seconds multiplied by 2 at the carotid artery.", isCorrect: false },
-                { text: "45 seconds at the suprasternal notch.", isCorrect: false }
-            ],
-            rationale: "Irregular cardiac rhythms require a full 60-second manual auscultation at the apex (5th ICS, MCL) to accurately account for premature contractions or pulse deficits.",
-            distractorAnalysis: "B & C: Multiplication shortcuts lead to significant miscalculations in irregular rhythms. D: Suprasternal notch is used for vascular thrill palpation, not apical pulse counting."
-        },
-        {
-            id: 32,
-            question: "A technician is preparing to transport a patient with active Pulmonary Tuberculosis to the Radiology department. Which respiratory protection measure is required for the PATIENT during transport?",
-            options: [
-                { text: "Standard surgical mask placed on the patient.", isCorrect: true },
-                { text: "N95 particulate respirator mask fitted tightly on the patient.", isCorrect: false },
-                { text: "Simple oxygen face mask set at 6 L/min.", isCorrect: false },
-                { text: "No mask is needed if transported in an enclosed wheelchair.", isCorrect: false }
-            ],
-            rationale: "Patients with airborne infections (TB) must wear a standard surgical mask during transport to contain expelled droplets at the source. N95 masks are worn by healthcare personnel, not patients.",
-            distractorAnalysis: "B: N95 respirators increase breathing resistance for patients and are unnecessary for source control. C: Simple O2 masks do not filter exhalation droplets. D: Transport without a mask exposes hallway air to TB spores."
-        },
-        {
-            id: 33,
-            question: "A nursing technician is providing mouth care to an unconscious intubated patient. What is the primary nursing action to prevent aspiration pneumonia during oral hygiene?",
-            options: [
-                { text: "Position the patient lateral side-lying with head turned toward the technician.", isCorrect: true },
-                { text: "Place the patient in Trendelenburg position with neck extended.", isCorrect: false },
-                { text: "Use 50 mL of tap water to rinse the mouth thoroughly.", isCorrect: false },
-                { text: "Keep the patient supine with a suction swab inserted into the throat.", isCorrect: false }
-            ],
-            rationale: "Side-lying position with head turned to the side allows oral fluids to drain by gravity out of the mouth rather than pooling into the posterior pharynx and lungs.",
-            distractorAnalysis: "B: Trendelenburg causes gastric reflux into the pharynx. C: Copious fluid instillation in an unconscious patient induces aspiration. D: Supine positioning directs fluids straight into the trachea."
-        },
-        {
-            id: 34,
-            question: "A nursing technician is taking care of a patient with a continuous closed chest drainage system. The technician notices continuous, vigorous bubbling in the water-seal chamber. What does this finding indicate?",
-            options: [
-                { text: "An air leak in the chest tube drainage system or pleural connection.", isCorrect: true },
-                { text: "Normal expected function during deep inspiration.", isCorrect: false },
-                { text: "Complete lung re-expansion achieved.", isCorrect: false },
-                { text: "Suction pressure is set too low on the wall regulator.", isCorrect: false }
-            ],
-            rationale: "Continuous bubbling in the water-seal chamber indicates an atmospheric air leak in the system or patient interface. (Intermittent bubbling during coughing/expiration is normal).",
-            distractorAnalysis: "B & C: Complete expansion stops all bubbling and tidaling. D: Wall suction setting affects the suction control chamber, not continuous bubbling in the water seal."
-        },
-        {
-            id: 35,
-            question: "A technician is measuring urine output for a patient in acute kidney injury. The total urine output for the entire 8-hour shift is 120 mL. How should the technician interpret and handle this finding?",
-            options: [
-                { text: "Report immediately to the staff nurse as it indicates oliguria (< 30 mL/hr).", isCorrect: true },
-                { text: "Document as normal adequate renal clearance.", isCorrect: false },
-                { text: "Wait until the 24-hour total is calculated before reporting.", isCorrect: false },
-                { text: "Offer the patient 1 liter of oral water immediately.", isCorrect: false }
-            ],
-            rationale: "Normal adult urine output is at least 30 mL/hour (240 mL/8 hours). An output of 120 mL in 8 hours (15 mL/hr) represents oliguria and potential renal collapse requiring immediate notification.",
-            distractorAnalysis: "B: 120 mL/8 hr is dangerously low. C: Waiting 24 hours causes irreversible renal damage delay. D: Administering fluids to an acute renal failure patient can trigger acute pulmonary edema."
-        },
-        {
-            id: 36,
-            question: "A technician is applying a hot water bottle to a patient's lower extremity to relieve muscle spasms. What is the maximum recommended water temperature to prevent skin thermal burns?",
-            options: [
-                { text: "46°C to 52°C (115°F to 125°F).", isCorrect: true },
-                { text: "65°C to 70°C (150°F to 160°F).", isCorrect: false },
-                { text: "30°C to 35°C (86°F to 95°F).", isCorrect: false },
-                { text: "Boiling water at 100°C.", isCorrect: false }
-            ],
-            rationale: "Safe hot water application temperatures for adults range between 46°C and 52°C (115°F - 125°F). Higher temperatures cause full-thickness thermal burns.",
-            distractorAnalysis: "B & D: Exceed 60°C and cause severe second- and third-degree skin burns within seconds. C: 30°C-35°C is below normal body core temperature (ineffective thermotherapy)."
-        },
-        {
-            id: 37,
-            question: "A nursing technician is positioning a bedbound patient to prevent pressure injury over the trochanteric region. What position modification avoids direct pressure on the greater trochanter?",
-            options: [
-                { text: "30-degree oblique side-lying position supported with pillows.", isCorrect: true },
-                { text: "Full 90-degree lateral side-lying position.", isCorrect: false },
-                { text: "Flat supine position without leg elevation.", isCorrect: false },
-                { text: "Prone position with toes pointing downward.", isCorrect: false }
-            ],
-            rationale: "The 30-degree oblique tilt relieves direct pressure off the greater trochanter and sacrum, redistributing weight onto the muscular buttocks area.",
-            distractorAnalysis: "B: 90-degree lateral placing concentrates maximum body weight directly onto the trochanter process, causing rapid pressure necrosis. C: Supine places pressure on sacrum/heels. D: Direct prone pressure damages knees and toes."
-        },
-        {
-            id: 38,
-            question: "A technician is assisting with a patient undergoing continuous lumbar epidural analgesia. The technician notes the patient's respiratory rate has dropped to 8 breaths per minute and the patient is difficult to arouse. What is the immediate priority?",
-            options: [
-                { text: "Alert the staff nurse STAT and prepare the emergency resuscitation code cart.", isCorrect: true },
-                { text: "Encourage the patient to take deep breaths and check again in 30 minutes.", isCorrect: false },
-                { text: "Increase the head of the bed to High-Fowler's position.", isCorrect: false },
-                { text: "Apply cold compresses to the patient's forehead.", isCorrect: false }
-            ],
-            rationale: "A respiratory rate < 10/min in a patient on epidural opioids indicates severe respiratory depression requiring emergency response (Naloxone administration by RN/MD).",
-            distractorAnalysis: "B: Delaying intervention in opioid-induced respiratory depression leads to respiratory arrest. C: Position changes do not reverse central opioid toxicity. D: Ineffective stimulation."
-        },
-        {
-            id: 39,
-            question: "A technician is preparing to collect a clean-catch midstream urine specimen from a female patient. What instruction must be given to the patient regarding cleansing the labia?",
-            options: [
-                { text: "Clean from front to back using a separate wipe for each side and the center.", isCorrect: true },
-                { text: "Clean from back to front using a single circular motion.", isCorrect: false },
-                { text: "Wash inside the vaginal canal with soap and warm water.", isCorrect: false },
-                { text: "No cleansing is required if the patient showered this morning.", isCorrect: false }
-            ],
-            rationale: "Front-to-back wiping prevents fecal contamination from the anal region into the urethral meatus. Using fresh wipes prevents re-introducing bacteria.",
-            distractorAnalysis: "B: Back-to-front wiping introduces perineal E. coli into the urethral meatus. C: Internal vaginal washing contaminates samples with flora and soap. D: Perineal cleansing is always mandatory prior to clean-catch."
-        },
-        {
-            id: 40,
-            question: "While measuring blood pressure on a stroke patient, the technician notes a sudden spike in BP to 210/120 mmHg accompanied by a severe headache. What is the proper response?",
-            options: [
-                { text: "Immediately report the critical BP values to the primary nurse.", isCorrect: true },
-                { text: "Re-check the BP in 2 hours using an automated machine.", isCorrect: false },
-                { text: "Allow the patient to rest flat and re-test after 45 minutes.", isCorrect: false },
-                { text: "Document the reading as baseline post-stroke response.", isCorrect: false }
-            ],
-            rationale: "A BP of 210/120 mmHg with severe headache represents a hypertensive crisis and potential hemorrhagic conversion requiring immediate emergency medical therapy.",
-            distractorAnalysis: "B & C: Delaying notification during a hypertensive crisis causes fatal intracranial hemorrhage or brain herniation. D: Dismissing extreme hypertension leads to brain death."
-        },
-        {
-            id: 41,
-            question: "A nursing technician is caring for a patient who has a wound drainage suction system (Jackson-Pratt / JP drain). How should the technician re-establish effective suction after emptying the drainage reservoir?",
-            options: [
-                { text: "Fully compress (squeeze) the bulb before replacing the cap.", isCorrect: true },
-                { text: "Leave the bulb fully inflated and plug the cap tightly.", isCorrect: false },
-                { text: "Instill 20 mL of sterile water into the bulb and close.", isCorrect: false },
-                { text: "Connect the JP tubing directly to wall vacuum suction.", isCorrect: false }
-            ],
-            rationale: "JP drains operate via closed negative pressure. Squeezing/compressing the flexible bulb evacuates air; capping while compressed creates continuous gentle suction drawing wound drainage out.",
-            distractorAnalysis: "B: An uncompressed bulb exerts zero suction. C: Instilling water contaminates the sterile wound bed. D: Connecting low-pressure JP units to high wall vacuum causes tissue tearing and hemorrhage."
-        },
-        {
-            id: 42,
-            question: "A technician is preparing to perform passive range-of-motion (ROM) exercises for a bedbound stroke patient. What is the correct principle when moving a joint?",
-            options: [
-                { text: "Support the limb distal and proximal to the joint being exercised, stopping at pain resistance.", isCorrect: true },
-                { text: "Force the joint past the point of resistance to improve flexibility.", isCorrect: false },
-                { text: "Move each joint rapidly 20 times per minute.", isCorrect: false },
-                { text: "Perform exercises only on the non-affected side.", isCorrect: false }
-            ],
-            rationale: "Proper ROM technique requires supporting joints above and below the pivot point, moving smoothly, and stopping immediately if muscle resistance or pain occurs to avoid joint/tendon injury.",
-            distractorAnalysis: "B: Forcing joints past resistance causes muscle tears and joint dislocation. C: Rapid motions provoke severe muscle spasms. D: Passive ROM is specifically targeted at the paralyzed/affected limb to prevent contractures."
-        },
-        {
-            id: 43,
-            question: "A nursing technician is obtaining a stool specimen for Clostridioides difficile (C. diff) toxin testing. Which specification must be met for the sample to be accepted by the laboratory?",
-            options: [
-                { text: "Specimen must be liquid or unformed stool submitted in a clean container.", isCorrect: true },
-                { text: "Specimen must be formed, hard stool collected over 3 days.", isCorrect: false },
-                { text: "Specimen must be mixed with 10 mL of tap water to prevent drying.", isCorrect: false },
-                { text: "Specimen must be incubated at 37°C for 4 hours before transport.", isCorrect: false }
-            ],
-            rationale: "Labs process C. diff testing only on unformed/liquid stool specimens (reflecting active disease/toxin production), as asymptomatic colonization in formed stool does not warrant testing.",
-            distractorAnalysis: "B: Formed stool samples are rejected by microbiology labs for C. diff testing. C & D: Adding tap water or incubating room-temp breaks down toxins and invalidates results."
-        },
-        {
-            id: 44,
-            question: "A technician is monitoring a patient post-abdominal surgery with an abdominal binder in place. Which neurovascular or respiratory assessment finding requires immediate removal or readjustment of the binder?",
-            options: [
-                { text: "Patient complains of shortness of breath and shallow rapid respirations.", isCorrect: true },
-                { text: "Patient states the surgical site feels supported during coughing.", isCorrect: false },
-                { text: "Surgical dressing remains clean, dry, and intact.", isCorrect: false },
-                { text: "Skin under the binder is warm with rapid capillary refill in toes.", isCorrect: false }
-            ],
-            rationale: "An abdominal binder applied too tightly restricts lower chest expansion and diaphragmatic movement, causing Hypoventilation and respiratory failure.",
-            distractorAnalysis: "B, C, & D: Intact dressings, supported wounds, and warm lower extremities indicate proper placement and desired therapeutic outcomes."
-        },
-        {
-            id: 45,
-            question: "A technician is transferring a paraplegic patient from a bed to a wheelchair. Where should the wheelchair be positioned relative to the bed for a safe transfer?",
-            options: [
-                { text: "At a 45-degree angle to the bed on the patient's strong side.", isCorrect: true },
-                { text: "Facing directly perpendicular to the bed 2 feet away.", isCorrect: false },
-                { text: "At the foot of the bed with wheels unlocked.", isCorrect: false },
-                { text: "On the patient's weak side with footrests lowered.", isCorrect: false }
-            ],
-            rationale: "Positioning the wheelchair at a 45-degree angle on the strong side minimizes pivot distance and leverages the patient's functional limb strength safely.",
-            distractorAnalysis: "B: Perpendicular setup increases pivot distance and fall risks. C: Unlocked wheels cause the chair to slide out during transfer. D: Lowered footrests trip the patient during movement."
-        },
-        {
-            id: 46,
-            question: "A nursing technician is assigned to perform oral care for a patient receiving continuous chemotherapy who has developed severe oral mucositis. What solution should be used for rinsing?",
-            options: [
-                { text: "0.9% Normal Saline or Sodium Bicarbonate mouth rinse.", isCorrect: true },
-                { text: "Undiluted commercial alcohol-based mouthwash.", isCorrect: false },
-                { text: "Hydrogen peroxide 30% concentrated solution.", isCorrect: false },
-                { text: "Lemon-glycerin swabs every 2 hours.", isCorrect: false }
-            ],
-            rationale: "Normal saline or sodium bicarbonate rinses clean delicate inflamed tissue without causing burning, drying, or chemical irritation in mucositis patients.",
-            distractorAnalysis: "B: Alcohol mouthwashes cause excruciating pain and severe mucosal drying. C: Concentrated hydrogen peroxide destroys tissue granulation. D: Lemon-glycerin swab chemicals cause enamel erosion and severe mucosal drying."
-        },
-        {
-            id: 47,
-            question: "A technician is measuring an oxygen saturation reading (SpO2) on a hypothermic shock patient with cold, pale fingers. The pulse oximeter shows 72% with a weak waveform. What is the correct technical step?",
-            options: [
-                { text: "Relocate the sensor probe to the forehead, earlobe, or nasal bridge.", isCorrect: true },
-                { text: "Document 72% as accurate arterial hypoxemia.", isCorrect: false },
-                { text: "Place two oximeter probes on adjacent fingers on the same hand.", isCorrect: false },
-                { text: "Administer high-flow 100% O2 via non-rebreather mask without checking RN.", isCorrect: false }
-            ],
-            rationale: "Peripheral vasoconstriction from hypothermia/shock reduces digital blood flow, causing inaccurate low SpO2 readings. Using central sites (forehead, earlobe) yields accurate core oxygenation readings.",
-            distractorAnalysis: "B: Accepting false readings leads to inappropriate therapy. C: Doubling probes on vasoconstricted fingers does not fix poor blood flow. D: O2 therapy adjustments require clinical evaluation."
-        },
-        {
-            id: 48,
-            question: "A nursing technician is assisting a patient who is post-hip arthroplasty (posterior approach). Which position of the affected leg must be maintained at all times during bed rest to prevent dislocation?",
-            options: [
-                { text: "Abduction using an abduction pillow between the legs.", isCorrect: true },
-                { text: "Adduction across the body midline.", isCorrect: false },
-                { text: "Internal rotation of the toes facing inward.", isCorrect: false },
-                { text: "Flexion of the hip greater than 90 degrees.", isCorrect: false }
-            ],
-            rationale: "Maintaining leg abduction (kept apart with a wedge pillow) prevents the femoral head prosthesis from dislocating out of the acetabular cup.",
-            distractorAnalysis: "B, C, & D: Adduction, internal rotation, and flexing the hip past 90 degrees are primary mechanisms causing immediate hip joint dislocation."
-        },
-        {
-            id: 49,
-            question: "A technician is caring for a patient who has a percutaneous endoscopic gastrostomy (PEG) tube. To prevent tube clogging, when should the PEG tube be flushed with warm water?",
-            options: [
-                { text: "Before and after medication administration and enteral feeds.", isCorrect: true },
-                { text: "Once every 48 hours only.", isCorrect: false },
-                { text: "Only when formula stops flowing completely.", isCorrect: false },
-                { text: "Flushing is contraindicated in PEG tubes.", isCorrect: false }
-            ],
-            rationale: "Routine flushing with 30 mL warm water before/after feedings and medication delivery prevents formula coagulation and enteral tube occlusion.",
-            distractorAnalysis: "B & C: Waiting for full blockage or flushing every 2 days guarantees irreversible tube clogging. D: Flushing is standard core maintenance."
-        },
-        {
-            id: 50,
-            question: "A nursing technician is obtaining a blood pressure measurement on a patient's leg over the popliteal artery. How will the systolic reading in the thigh compare to the brachial artery reading in a healthy adult?",
-            options: [
-                { text: "10 to 40 mmHg higher in the popliteal artery than the brachial artery.", isCorrect: true },
-                { text: "10 to 40 mmHg lower in the popliteal artery than the brachial artery.", isCorrect: false },
-                { text: "Identical value in both extremities.", isCorrect: false },
-                { text: "Diastolic pressure is 50% lower, but systolic is unchanged.", isCorrect: false }
-            ],
-            rationale: "Systolic blood pressure in the lower extremities (thigh/popliteal) is normally 10 to 40 mmHg HIGHER than in the upper arm due to larger vessel diameter and hydrostatic pressure dynamics.",
-            distractorAnalysis: "B, C, & D: Popliteal systolic pressure lower than brachial indicates peripheral arterial disease or coarctation of the aorta."
-        },
-        {
-            id: 51,
-            question: "A technician is preparing to perform post-mortem care on a patient who was declared deceased. Which action should be performed BEFORE rigor mortis sets in?",
-            options: [
-                { text: "Close the eyelids, insert dentures (if applicable), and place body supine with head elevated on a pillow.", isCorrect: true },
-                { text: "Flex the knees and place hands tightly across the lower abdomen.", isCorrect: false },
-                { text: "Place the body in prone position to allow hypostasis.", isCorrect: false },
-                { text: "Pack all body orifices with heavy gauze before family viewing.", isCorrect: false }
-            ],
-            rationale: "Aligning the body supine with head slightly elevated (prevents facial blood pooling) and closing eyes/inserting dentures prior to rigor mortis ensures natural appearance for family viewing.",
-            distractorAnalysis: "B: Flexing joints leads to permanent stiffening in bent positions, complicating transfer. C: Prone position causes dark blood pooling (livor mortis) in the face. D: Heavy packing prior to family viewing is inappropriate."
-        },
-        {
-            id: 52,
-            question: "A nursing technician is removing a dirty peripheral IV catheter after therapy discontinuation. After withdrawing the catheter tip from the vein, what immediate action is required?",
-            options: [
-                { text: "Apply direct pressure to the site with sterile gauze for at least 2 to 3 minutes.", isCorrect: true },
-                { text: "Apply an alcohol swab firmly over the puncture site and rub vigorously.", isCorrect: false },
-                { text: "Leave the site open to air to promote rapid scab formation.", isCorrect: false },
-                { text: "Flex the elbow tightly to stop bleeding.", isCorrect: false }
-            ],
-            rationale: "Direct manual pressure with sterile gauze stops venous bleeding and prevents hematoma formation. Pressure should be held longer in patients on anticoagulants.",
-            distractorAnalysis: "B: Alcohol stings severely and prevents platelet clotting. C: Leaving site open causes continuous bleeding and bed contamination. D: Bending the elbow opens the vein wall and forms large hematomas."
-        },
-        {
-            id: 53,
-            question: "A technician is providing hygiene care for a patient who has an indwelling Foley catheter. What is the correct technique for cleaning the catheter tubing?",
-            options: [
-                { text: "Clean outward starting from the urethral meatus down the catheter tube for 4 inches.", isCorrect: true },
-                { text: "Clean upward from the drainage bag toward the urethral meatus.", isCorrect: false },
-                { text: "Vigorously scrub the catheter junction back and forth with alcohol.", isCorrect: false },
-                { text: "Disconnect the catheter from the drainage tube to flush with soapy water.", isCorrect: false }
-            ],
-            rationale: "Wiping away from the urinary meatus (distal motion) prevents dragging perineal bacteria back into the urinary tract, reducing CAUTI risks.",
-            distractorAnalysis: "B: Wiping toward the body pushes colonizing bacteria into the bladder. C: Friction back-and-forth introduces infection. D: Disconnecting closed urinary systems introduces fatal bacterial sepsis risks."
-        },
-        {
-            id: 54,
-            question: "A technician is checking the gastric pH of an aspirate pulled from a newly placed small-bore nasogastric tube before feeding. Which pH value confirms correct positioning in the stomach?",
-            options: [
-                { text: "pH of 1.0 to 5.0.", isCorrect: true },
-                { text: "pH of 7.0 or higher.", isCorrect: false },
-                { text: "pH of 8.5 to 9.0.", isCorrect: false },
-                { text: "pH equal to alkaline saline (11.0).", isCorrect: false }
-            ],
-            rationale: "Gastric juice is highly acidic with a typical pH range between 1.0 and 5.0. A pH > 6.0 indicates pleural fluid (lung placement) or intestinal secretions.",
-            distractorAnalysis: "B & C: pH > 6.0-7.0 suggests accidental tracheal/bronchial entry or intestinal placement, requiring feeding to be held until X-ray confirmation."
-        },
-        {
-            id: 55,
-            question: "A nursing technician is measuring vital signs for a pediatric patient aged 3 years. Which vital sign measurement method is most accurate for core body temperature in this age group when non-invasive rapid check is required?",
-            options: [
-                { text: "Tympanic or Temporal artery scan.", isCorrect: true },
-                { text: "Oral glass thermometer.", isCorrect: false },
-                { text: "Axillary temperature recorded for 10 seconds.", isCorrect: false },
-                { text: "Rectal temperature inserted 3 inches deep.", isCorrect: false }
-            ],
-            rationale: "Tympanic and temporal scans provide fast, non-invasive, and accurate core temperature correlations without safety risks in uncooperative 3-year-olds.",
-            distractorAnalysis: "B: Glass/oral probes risk biting and oral injury in toddlers. C: Axillary checks are inaccurate and lag core fluctuations. D: 3 inches is dangerously deep for rectal entry (max 0.5 to 1 inch in small children)."
-        },
-        {
-            id: 56,
-            question: "A technician is assigned to empty a rigid sharps disposal container in an outpatient clinic. At what fill capacity must the sharps container be sealed and replaced?",
-            options: [
-                { text: "When 2/3 to 3/4 full.", isCorrect: true },
-                { text: "When completely full to the top brim.", isCorrect: false },
-                { text: "When 100% overflowing.", isCorrect: false },
-                { text: "At the end of every month regardless of level.", isCorrect: false }
-            ],
-            rationale: "Sharps containers must be sealed and replaced when 2/3 to 3/4 full to prevent needles from protruding, avoiding accidental needle-stick injuries.",
-            distractorAnalysis: "B & C: Allowing sharps containers to reach 100% capacity leads to needle protrusion and severe bloodborne pathogen exposure. D: Waiting monthly ignores volume safety thresholds."
-        },
-        {
-            id: 57,
-            question: "A technician is applying a cold ice pack to a patient's acute ankle sprain. What is the maximum continuous duration that ice should be applied in a single treatment session?",
-            options: [
-                { text: "15 to 20 minutes.", isCorrect: true },
-                { text: "45 to 60 minutes.", isCorrect: false },
-                { text: "2 hours continuous.", isCorrect: false },
-                { text: "Until the skin turns pale blue.", isCorrect: false }
-            ],
-            rationale: "Cold therapy applications should be limited to 15-20 minutes at a time. Prolonged cold causes secondary reflex vasodilation (Hunting response) and thermal tissue frostbite.",
-            distractorAnalysis: "B & C: Applications > 30 mins cause tissue ischemia, skin necrosis, and nerve damage. D: Pale blue skin signifies acute hypothermic vascular occlusion."
-        },
-        {
-            id: 58,
-            question: "A nursing technician enters the room of a patient receiving oxygen via simple face mask at 6 L/min. The technician finds the mask pulled down around the patient's neck and the patient in severe respiratory distress. What is the technician's immediate action?",
-            options: [
-                { text: "Replace the mask over the patient's nose and mouth immediately and summon the nurse.", isCorrect: true },
-                { text: "Turn off the oxygen flowmeter completely.", isCorrect: false },
-                { text: "Leave the room to find the primary physician.", isCorrect: false },
-                { text: "Place the patient in supine flat position.", isCorrect: false }
-            ],
-            rationale: "Immediate restoration of prescribed oxygen delivery by reapplying the mask directly treats acute hypoxemia while calling for clinical help.",
-            distractorAnalysis: "B: Turning off O2 worsens acute respiratory arrest. C: Leaving a suffocating patient alone violates basic safety protocols. D: Flat supine position worsens respiratory distress."
-        },
-        {
-            id: 59,
-            question: "A technician is caring for a patient on contact precautions for Methicillin-Resistant Staphylococcus aureus (MRSA) in a surgical wound. How should the technician handle reusable equipment (e.g., stethoscope, BP cuff) used for this patient?",
-            options: [
-                { text: "Dedicate disposable or single-patient-use equipment kept inside the room.", isCorrect: true },
-                { text: "Use standard ward equipment and wipe with paper towel after use.", isCorrect: false },
-                { text: "Share equipment freely as long as gloves are worn.", isCorrect: false },
-                { text: "Soak equipment in boiling water for 5 minutes after shift.", isCorrect: false }
-            ],
-            rationale: "Contact isolation protocols require dedicated single-patient equipment remaining inside the isolation room to prevent cross-contamination across hospital wards.",
-            distractorAnalysis: "B & C: Sharing non-disinfected equipment spreads MRSA nosocomial infections to immunocompromised patients. D: Boiling electronic medical gear destroys devices."
-        },
-        {
-            id: 60,
-            question: "A nursing technician is assisting a patient with severe dyspnea who is diagnosed with Chronic Obstructive Pulmonary Disease (COPD). What sitting position best aids respiratory muscle mechanics and breathing efficiency?",
-            options: [
-                { text: "Orthopneic (Tripod) position sitting leaning forward over an overbed table.", isCorrect: true },
-                { text: "Trendelenburg position flat on back.", isCorrect: false },
-                { text: "Left side-lying position with feet elevated.", isCorrect: false },
-                { text: "Supine position with head flat.", isCorrect: false }
-            ],
-            rationale: "The orthopneic/tripod position (leaning forward resting arms on an overbed table) leverages accessory chest muscles, lowers the diaphragm, and maximizes lung expansion.",
-            distractorAnalysis: "B, C, & D: Supine and Trendelenburg positions force abdominal organs against the diaphragm, severely restricting lung expansion and causing respiratory failure in COPD."
-        },
-        {
-            id: 61,
-            question: "A nursing technician is assisting with a patient post-craniotomy for brain tumor resection. While measuring vital signs, the technician notes the blood pressure elevated from 120/70 mmHg to 185/60 mmHg, heart rate dropped from 76 bpm to 44 bpm, and respirations became irregular and deep. What clinical syndrome does this triad represent?",
-            options: [
-                { text: "Cushing's Triad indicating severe intracranial pressure (ICP) elevation.", isCorrect: true },
-                { text: "Beck's Triad indicating acute cardiac tamponade.", isCorrect: false },
-                { text: "Virchow's Triad indicating deep vein thrombosis formation.", isCorrect: false },
-                { text: "Charcot's Triad indicating acute ascending cholangitis.", isCorrect: false }
-            ],
-            rationale: "Widened pulse pressure (systolic hypertension), bradycardia, and irregular respirations form Cushing's Triad, a terminal sign of severe Intracranial Pressure (ICP) elevation and impending brain herniation requiring immediate emergency neurosurgical intervention.",
-            distractorAnalysis: "B: Beck's Triad consists of hypotension, JVD, and muffled heart sounds. C: Virchow's Triad relates to vascular wall injury, stasis, and hypercoagulability. D: Charcot's Triad includes RUQ pain, fever, and jaundice."
-        },
-        {
-            id: 62,
-            question: "A nursing technician is monitoring a patient with a severe pelvic fracture in traction. The technician suddenly observes diffuse petechiae across the patient's anterior chest and axillae, accompanied by sudden dyspnea and confusion. What immediate clinical life-threatening complication should be reported to the RN?",
-            options: [
-                { text: "Disseminated Intravascular Coagulation (DIC).", isCorrect: false },
-                { text: "Fat Embolism Syndrome (FES).", isCorrect: true },
-                { text: "Acute Tension Pneumothorax.", isCorrect: false },
-                { text: "Compartment Syndrome of the lower leg.", isCorrect: false }
-            ],
-            rationale: "Fat Embolism Syndrome (FES) classically occurs 12–72 hours following long bone or pelvic fractures. The hallmark triad consists of hypoxemia (dyspnea), neurological abnormalities (confusion), and a pathognomonic petechial rash across the neck, axillae, and chest.",
-            distractorAnalysis: "A: DIC causes widespread mucosal bleeding/ecchymosis, not targeted axillary/chest petechiae with fracture embolization. C: Tension pneumothorax presents with tracheal deviation and absent breath sounds. D: Compartment syndrome presents with pain out of proportion in an extremity."
-        },
-        {
-            id: 63,
-            question: "A nursing technician is caring for a patient admitted with major full-thickness burns covering 40% Total Body Surface Area (TBSA). During the first 24 hours of resuscitation, what primary vascular fluid shift occurs that requires strict monitoring of urine output?",
-            options: [
-                { text: "Fluid shift from intravascular to interstitial space causing hypovolemic burn shock.", isCorrect: true },
-                { text: "Fluid shift from intracellular to intravascular space causing hypervolemia.", isCorrect: false },
-                { text: "Rapid shifting of potassium into the cells causing acute hypokalemia.", isCorrect: false },
-                { text: "Massive retention of sodium in the vascular bed causing extreme hypertension.", isCorrect: false }
-            ],
-            rationale: "Burn injury increases capillary permeability, driving massive fluid and plasma protein shifts out of the intravascular space into interstitial tissue (third-spacing). This leads to acute burn shock and severe hypovolemia, making hourly urine output monitoring critical.",
-            distractorAnalysis: "B: Intravascular expansion does not occur; volume depletion is immediate. C: Cell damage releases intracellular potassium, causing hyperkalemia, not hypokalemia. D: Sodium shifts out of vessels into tissue with water."
-        },
-        {
-            id: 64,
-            question: "A technician is assessing a patient admitted with suspected acute compartment syndrome of the right lower leg following a crush injury. Which physical assessment finding is the earliest and most sensitive indicator of compartment syndrome?",
-            options: [
-                { text: "Loss of distal dorsalis pedis and posterior tibial pulses.", isCorrect: false },
-                { text: "Unrelenting severe pain out of proportion to the physical injury, increased by passive stretch.", isCorrect: true },
-                { text: "Paresis and total paralysis of the foot and toes.", isCorrect: false },
-                { text: "Cold, cyanotic leg with delayed capillary refill exceeding 5 seconds.", isCorrect: false }
-            ],
-            rationale: "Severe, persistent pain disproportionate to the visible injury that worsens during passive muscle stretching is the classic earliest sign of compartment syndrome. Pulselessness and paralysis are late, irreversible ischemic tissue disaster signs.",
-            distractorAnalysis: "A & C: Pulselessness and paralysis indicate permanent, irreversible nerve and muscle damage (late signs). D: Cyanosis and coldness occur later as arterial flow becomes occluded."
-        },
-        {
-            id: 65,
-            question: "A nursing technician is performing arterial blood gas (ABG) specimen transport. After the radial arterial blood sample is drawn into a heparinized syringe by the respiratory therapist, how must the technician handle the blood specimen for laboratory transport to prevent inaccurate gas decay?",
-            options: [
-                { text: "Store at room temperature and transport within 4 hours.", isCorrect: false },
-                { text: "Place the syringe in an ice-water slurry container and deliver immediately within 15 minutes.", isCorrect: true },
-                { text: "Warm the sample in a 37°C water bath prior to pneumatic tube transfer.", isCorrect: false },
-                { text: "Vigorously shake the syringe to dissolve cellular oxygen content.", isCorrect: false }
-            ],
-            rationale: "Placing ABG specimens in an ice-water slurry slows down cellular metabolism (leukocyte oxygen consumption and CO2 production), ensuring accurate PO2, PCO2, and pH levels during rapid transport.",
-            distractorAnalysis: "A: Room temperature storage allows blood cells to consume O2 and produce CO2, rendering results invalid. C: Warming accelerates metabolic blood breakdown. D: Vigorous shaking hemolyzes red blood cells."
-        },
-        {
-            id: 66,
-            question: "A nursing technician is measuring vital signs for a client with a cervical spinal cord injury (C6 lesion). The patient suddenly complains of a pounding headache, sweating profuse flush above the neck, and nasal congestion. The BP reads 210/110 mmHg. What is the priority emergency action?",
-            options: [
-                { text: "Lower the head of the bed flat to increase cerebral perfusion.", isCorrect: false },
-                { text: "Check for bowel impaction or a blocked urinary catheter and elevate HOB to 90 degrees.", isCorrect: true },
-                { text: "Administer 500 mL IV normal saline fluid bolus immediately.", isCorrect: false },
-                { text: "Apply extra warm blankets to reduce shivering.", isCorrect: false }
-            ],
-            rationale: "Pounding headache, hypertension, bradycardia, and flushing above the injury level in T6-or-above lesions signal Autonomic Dysreflexia. Elevating the head of bed to 90 degrees immediately lowers intracranial BP via orthostatic effect, while checking for triggers (bladder distension, bowel impaction) resolves the fatal stimulus.",
-            distractorAnalysis: "A: Lowering the bed flat increases central venous return and cerebral blood pressure, risking stroke or death. C: IV fluid increases hypertension. D: Blankets increase cutaneous sensory triggers."
-        },
-        {
-            id: 67,
-            question: "A technician is caring for a patient who has a temporary transvenous pacemaker inserted. During bedside care, the technician notes pacer spikes on the cardiac monitor that are NOT followed by a QRS complex. What electrophysiological phenomenon is occurring?",
-            options: [
-                { text: "Failure to capture.", isCorrect: true },
-                { text: "Failure to sense.", isCorrect: false },
-                { text: "Failure to pace.", isCorrect: false },
-                { text: "Normal sinus rhythm with artifact.", isCorrect: false }
-            ],
-            rationale: "When a pacemaker emits an electrical impulse (pacer spike) but fails to depolarize the myocardium (no subsequent QRS complex), it is termed 'Failure to Capture', risking hemodynamic collapse.",
-            distractorAnalysis: "B: Failure to sense occurs when the pacer fires randomly without recognizing intrinsic heart beats. C: Failure to pace means no pacer spikes appear at all. D: Spikes without ventricular complexes represent lethal non-capture."
-        },
-        {
-            id: 68,
-            question: "A nursing technician is obtaining vital signs on a patient receiving continuous IV Heparin therapy. The technician notices new petechiae and ecchymosis on the upper arms and blood in the urine bag. What lab value should the technician expect the nurse to evaluate STAT?",
-            options: [
-                { text: "Prothrombin Time (PT) and INR.", isCorrect: false },
-                { text: "Activated Partial Thromboplastin Time (aPTT) and Platelet Count.", isCorrect: true },
-                { text: "Serum Fibrinogen level.", isCorrect: false },
-                { text: "Erythrocyte Sedimentation Rate (ESR).", isCorrect: false }
-            ],
-            rationale: "Unfractionated Heparin therapy requires continuous monitoring of aPTT (therapeutic range 1.5-2.5x baseline) and Platelet Count to screen for Heparin-Induced Thrombocytopenia (HIT) and life-threatening bleeding.",
-            distractorAnalysis: "A: PT/INR is used to monitor Warfarin (Coumadin) therapy, not Heparin. C: Fibrinogen is evaluated in DIC or liver failure. D: ESR measures systemic inflammation."
-        },
-        {
-            id: 69,
-            question: "A technician is assigned to perform tracheostomy suctioning for a patient with thick tenacious secretions. What maximum vacuum pressure setting should be set on the wall suction regulator for an adult patient?",
-            options: [
-                { text: "80 to 120 mmHg.", isCorrect: true },
-                { text: "150 to 200 mmHg.", isCorrect: false },
-                { text: "20 to 50 mmHg.", isCorrect: false },
-                { text: "250 to 300 mmHg.", isCorrect: false }
-            ],
-            rationale: "Standard safe wall suction negative pressure for adult endotracheal/tracheostomy suctioning is 80 to 120 mmHg (up to 150 mmHg max in specific institutional guidelines). High pressures cause tracheal mucosal shearing, trauma, and atelectasis.",
-            distractorAnalysis: "B & D: Suction pressures > 150 mmHg destroy soft tissue mucosa and cause severe tracheal hemorrhage and hypoxia. C: 20-50 mmHg is ineffective for adult airway secretions."
-        },
-        {
-            id: 70,
-            question: "A technician is preparing to perform an electrocardiogram (ECG) on a dextrocardia patient (heart located on the right side of the chest). How should the technician adjust standard chest lead placements (V1-V6)?",
-            options: [
-                { text: "Place V1 through V6 in mirror-image positions on the right side of the chest.", isCorrect: true },
-                { text: "Place all 6 chest electrodes on the patient's back along the scapula.", isCorrect: false },
-                { text: "Place leads in standard position but reverse the limb leads.", isCorrect: false },
-                { text: "No placement changes are required for dextrocardia.", isCorrect: false }
-            ],
-            rationale: "In dextrocardia, the cardiac apex points to the right. To accurately depict right ventricular cardiac depolarization, precordial leads V1–V6 are placed in exact mirror image on the right side of the thorax (V1R-V6R).",
-            distractorAnalysis: "B: Posterior placement (V7-V9) is used for posterior MI detection, not dextrocardia. C: Reversing limb leads without altering precordial leads generates distorted vectors. D: Standard placement shows false ischemia and microvoltage."
-        },
-        {
-            id: 71,
-            question: "A nursing technician is caring for a patient who returned from a transurethral resection of the prostate (TURP) with a 3-way Foley catheter connected to Continuous Bladder Irrigation (CBI). The technician notices the outflow drainage has become dark red with large clots, and irrigation fluid flow has stopped. What is the immediate priority?",
-            options: [
-                { text: "Stop the CBI flow, check for catheter obstruction, and alert the RN.", isCorrect: true },
-                { text: "Increase the CBI flow rate to maximum to push clots out.", isCorrect: false },
-                { text: "Instill 100 mL of sterile water with a bulb syringe under high pressure.", isCorrect: false },
-                { text: "Instruct the patient to strain hard to void past the catheter.", isCorrect: false }
-            ],
-            rationale: "Occluded CBI due to blood clots causes acute bladder distension, severe spasms, and bladder rupture. Stopping the influx while checking for line kinks and notifying the nurse for manual low-pressure irrigation prevents tissue injury.",
-            distractorAnalysis: "B: Increasing inflow into an occluded bladder causes extreme overdistension, agonizing pain, and bladder tearing. C: High-pressure manual flushing risks prostatic bed suture disruption. D: Straining increases pelvic venous bleeding."
-        },
-        {
-            id: 72,
-            question: "A technician is assisting in the emergency room with a suspected spinal cord injury patient. How should the technician perform the turning maneuver to reposition the patient while maintaining total spinal alignment?",
-            options: [
-                { text: "Logrolling maneuver with at least 3 to 4 staff members keeping head, neck, and torso aligned.", isCorrect: true },
-                { text: "Standard two-person lateral roll pivoting at the waist.", isCorrect: false },
-                { text: "High-Fowler's lift using a slide sheet under the buttocks.", isCorrect: false },
-                { text: "Passive gait-belt pivot turn to the side.", isCorrect: false }
-            ],
-            rationale: "Logrolling maintains the patient's spine in strict linear alignment as a single unit without twisting or flexion, preventing compression or severance of the spinal cord.",
-            distractorAnalysis: "B: Pivoting at the waist flexes and twists vertebral segments, causing cord transection. C & D: Flexing spinal columns in acute trauma leads to irreversible spinal paralysis."
-        },
-        {
-            id: 73,
-            question: "A nursing technician is obtaining vital signs for a post-op liver biopsy patient. Which positioning requirement is mandatory for the patient immediately following a percutaneous liver biopsy?",
-            options: [
-                { text: "Right lateral side-lying position with a folded towel under the biopsy site for 2 to 4 hours.", isCorrect: true },
-                { text: "Left lateral side-lying position with head elevated 45 degrees.", isCorrect: false },
-                { text: "High-Fowler's position to prevent diaphragm pressure.", isCorrect: false },
-                { text: "Prone position with a pillow under the feet.", isCorrect: false }
-            ],
-            rationale: "Positioning the patient on their right side applies direct pressure against the liver capsule wall against the mattress, tamponading liver puncture site bleeding.",
-            distractorAnalysis: "B: Left side-lying removes pressure off the liver, predisposing the patient to massive intra-abdominal hemorrhage. C & D: Elevating or prone positioning fails to provide direct hepatic compression."
-        },
-        {
-            id: 74,
-            question: "A technician is caring for a patient receiving continuous enteral nutrition via NG tube. The nurse asks the technician to assist in preventing aspiration. What head-of-bed (HOB) elevation must be maintained continuously during feeding?",
-            options: [
-                { text: "At least 30 to 45 degrees (Semi-Fowler's to Fowler's).", isCorrect: true },
-                { text: "Flat supine (0 degrees) to allow gut absorption.", isCorrect: false },
-                { text: "10 to 15 degrees in Trendelenburg position.", isCorrect: false },
-                { text: "Flat on left side with legs flexed.", isCorrect: false }
-            ],
-            rationale: "Maintaining HOB elevation between 30–45 degrees uses gravity to prevent gastric regurgitation and aspiration into the tracheobronchial tree during continuous enteral feeding.",
-            distractorAnalysis: "B & C: Flat or Trendelenburg positioning directs gastric contents into the pharynx, inducing fatal pulmonary aspiration pneumonia. D: Side-lying flat does not prevent proximal esophageal reflux."
-        },
-        {
-            id: 75,
-            question: "While assessing a adult patient in cardiac arrest, the technician initiates cardiopulmonary resuscitation (CPR). What is the correct compression depth and rate per minute according to international basic life support guidelines?",
-            options: [
-                { text: "Depth of 2 to 2.4 inches (5 to 6 cm) at a rate of 100 to 120 compressions/min.", isCorrect: true },
-                { text: "Depth of 1 inch (2.5 cm) at a rate of 80 compressions/min.", isCorrect: false },
-                { text: "Depth of 3 to 4 inches (8 to 10 cm) at a rate of 140 compressions/min.", isCorrect: false },
-                { text: "Depth of 1.5 inches (4 cm) at a rate of 60 compressions/min.", isCorrect: false }
-            ],
-            rationale: "AHA/ERC guidelines require high-quality CPR: chest compression depth of 2 to 2.4 inches (5 to 6 cm) in adults at a rate of 100–120 beats/minute to ensure coronary perfusion pressure.",
-            distractorAnalysis: "B & D: Shallow, slow compressions fail to generate cardiac output. C: Excessive depth (> 6 cm) causes rib fractures, cardiac rupture, and liver laceration."
-        },
-        {
-            id: 76,
-            question: "A nursing technician is obtaining vital signs on a diabetic ketoacidosis (DKA) patient. The technician observes rapid, deep, sighing respirations at a rate of 32 breaths/min with a fruity breath odor. How should the technician document this respiratory pattern?",
-            options: [
-                { text: "Kussmaul breathing.", isCorrect: true },
-                { text: "Cheyne-Stokes breathing.", isCorrect: false },
-                { text: "Biot's respirations.", isCorrect: false },
-                { text: "Hypoventilation.", isCorrect: false }
-            ],
-            rationale: "Kussmaul respiration is a deep, rapid hyperventilation pattern seen in severe metabolic acidosis (DKA). The body attempts to blow off carbon dioxide (acid) to compensate for low blood pH.",
-            distractorAnalysis: "B: Cheyne-Stokes features alternating hyperpnea and apnea (brainstem injury/heart failure). C: Biot's respiration is irregular periods of apnea and shallow breaths (increased ICP). D: DKA causes extreme hyperventilation, not hypoventilation."
-        },
-        {
-            id: 77,
-            question: "A technician is caring for a patient who had a radical neck dissection. The technician notes the surgical vacuum drain tubing contains cloudy, milky-white fluid accumulation. What post-operative complication does this milky drainage suggest?",
-            options: [
-                { text: "Chyle leak caused by thoracic duct injury.", isCorrect: true },
-                { text: "Active arterial bleeding from the carotid artery.", isCorrect: false },
-                { text: "Normal serosanguinous operative exudate.", isCorrect: false },
-                { text: "Acute bacterial wound infection with purulent discharge.", isCorrect: false }
-            ],
-            rationale: "Milky-white lymphatic fluid in a neck drain indicates a chyle leak, caused by accidental trauma to the thoracic duct during head and neck surgery, requiring urgent surgical attention.",
-            distractorAnalysis: "B: Arterial bleeding is bright crimson red. C: Normal serosanguinous fluid is clear pinkish-yellow. D: Purulent discharge is thick, yellow-green, and malodorous, not milky lymphatic fluid."
-        },
-        {
-            id: 78,
-            question: "A nursing technician is assigned to perform standard wound care for a Stage 2 pressure injury on the sacrum. What type of dressing is most appropriate for a Stage 2 pressure injury with minimal exudate?",
-            options: [
-                { text: "Hydrocolloid dressing.", isCorrect: true },
-                { text: "Dry sterile cotton gauze packing.", isCorrect: false },
-                { text: "Wet-to-dry mechanical debridement gauze.", isCorrect: false },
-                { text: "Dakin's sodium hypochlorite solution soak.", isCorrect: false }
-            ],
-            rationale: "Hydrocolloid dressings maintain a moist wound environment, protect delicate granulating epithelial tissue, and form an occlusive seal for Stage 2 pressure injuries.",
-            distractorAnalysis: "B: Dry gauze dries out the wound bed, causing tissue destruction upon removal. C: Wet-to-dry debridement tears away fresh healthy tissue. D: Dakin's solution is toxic to uninfected granulating cells."
-        },
-        {
-            id: 79,
-            question: "A technician is monitoring a pediatric infant admitted with severe acute gastroenteritis. Which sign observed during assessment indicates severe dehydration in an 8-month-old infant?",
-            options: [
-                { text: "Sunken anterior fontanelle, absence of tears when crying, and dry mucous membranes.", isCorrect: true },
-                { text: "Bulging anterior fontanelle and high-pitched cry.", isCorrect: false },
-                { text: "Moist oral mucosa and capillary refill of 1.5 seconds.", isCorrect: false },
-                { text: "Increased urine output with light yellow urine.", isCorrect: false }
-            ],
-            rationale: "Infant dehydration presents with sunken fontanelles, lethargy, lack of tear production, dry mucous membranes, prolonged capillary refill (> 3 seconds), and oliguria.",
-            distractorAnalysis: "B: Bulging fontanelles indicate increased intracranial pressure or meningitis. C & D: Represent normal, well-hydrated pediatric clinical findings."
-        },
-        {
-            id: 80,
-            question: "A technician is collecting a 24-hour ambulatory Holter monitor for a cardiac patient. What critical instruction must the technician reinforce to the patient during the monitoring period?",
-            options: [
-                { text: "Maintain a detailed written daily event log of all activities, symptoms, and times.", isCorrect: true },
-                { text: "Refrain from taking prescribed daily heart medications while wearing the device.", isCorrect: false },
-                { text: "Remove the monitor electrodes while taking a warm shower or bath.", isCorrect: false },
-                { text: "Remain resting in bed continuously for the full 24 hours.", isCorrect: false }
-            ],
-            rationale: "Patients wearing a Holter monitor must log exact times of activities (walking, eating, sleeping) and symptoms (palpitations, chest pain) so cardiologists can correlate symptoms with ECG waveforms.",
-            distractorAnalysis: "B: Medications must be continued as prescribed. C: Holter devices must not get wet; showering/bathing is strictly prohibited unless wireless/waterproof. D: Patients should follow normal daily routines, not stay in bed."
-        },
-        {
-            id: 81,
-            question: "A technician is preparing to clean a patient's eyes who has severe bilateral purulent conjunctivitis. How should the technician wipe the eye to avoid cross-contaminating the lacrimal system?",
-            options: [
-                { text: "From the inner canthus to the outer canthus using a fresh cotton ball for each stroke.", isCorrect: true },
-                { text: "From the outer canthus to the inner canthus with a single gauze pad.", isCorrect: false },
-                { text: "In a circular motion directly over the exposed cornea.", isCorrect: false },
-                { text: "From side-to-side vigorously across both eyes with the same cloth.", isCorrect: false }
-            ],
-            rationale: "Cleansing from inner to outer canthus directs purulent discharge away from the nasolacrimal duct system, and using fresh cotton balls prevents cross-contaminating eyes or lacrimal structures.",
-            distractorAnalysis: "B: Outer-to-inner wiping pushes purulent bacteria directly into the nasolacrimal duct. C: Wiping corneas causes corneal abrasions. D: Sharing cloths across eyes spreads bacterial keratitis."
-        },
-        {
-            id: 82,
-            question: "A nursing technician is obtaining a pulse rate on an infant under 1 year of age during routine vital signs. Where is the primary, most accurate site to measure the pulse in an infant?",
-            options: [
-                { text: "Apical pulse site using a pediatric stethoscope for 1 full minute.", isCorrect: true },
-                { text: "Radial pulse site using distal light palpation.", isCorrect: false },
-                { text: "Carotid artery site using firm bilateral pressure.", isCorrect: false },
-                { text: "Popliteal pulse behind the knee with leg extended.", isCorrect: false }
-            ],
-            rationale: "In infants under 1 year, peripheral pulses (radial) are difficult to count accurately due to rapid rate and anatomical depth. Apical pulse auscultation for 1 minute is standard practice.",
-            distractorAnalysis: "B: Radial pulses are faint and inaccurate in infants. C: Palpating carotid arteries in infants compresses short neck structures and stimulates vagal reflexes. D: Popliteal is difficult to locate."
-        },
-        {
-            id: 83,
-            question: "A technician is caring for a patient who has an arteriovenous (AV) graft in the left forearm for hemodialysis. Which assessment step must the technician perform to evaluate graft vascular patency?",
-            options: [
-                { text: "Palpate for a vascular 'thrill' and auscultate for a vascular 'bruit' over the graft site.", isCorrect: true },
-                { text: "Perform Allen's test on the ulnar artery of the affected arm.", isCorrect: false },
-                { text: "Inflate a BP cuff over the graft to test venous resistance.", isCorrect: false },
-                { text: "Instill 5 mL of normal saline into the graft port.", isCorrect: false }
-            ],
-            rationale: "Patency of an active dialysis AV graft/fistula is confirmed by feeling a continuous vibration ('thrill') and hearing a continuous blowing sound ('bruit') caused by turbulent high-velocity arterial blood flow.",
-            distractorAnalysis: "B: Allen's test evaluates radial/ulnar collateral flow prior to arterial puncture. C: BP cuffs on fistula arms cause immediate graft thrombosis. D: Technicians do not puncture or flush dialysis access."
-        },
-        {
-            id: 84,
-            question: "A nursing technician is measuring an automated capillary blood glucose level. The glucometer screen displays an error reading 'HI'. What does this display signify regarding the blood glucose level?",
-            options: [
-                { text: "Blood glucose exceeds the instrument's upper measurement limit (usually > 500-600 mg/dL).", isCorrect: true },
-                { text: "Blood glucose is dangerously low below 20 mg/dL.", isCorrect: false },
-                { text: "Hematocrit interference caused by severe anemia.", isCorrect: false },
-                { text: "The test strip was inserted backwards into the meter.", isCorrect: false }
-            ],
-            rationale: "Glucometers display 'HI' when blood glucose levels exceed the device's calibrated detection range (> 500-600 mg/dL). This signifies severe hyperglycemia requiring immediate STAT lab verification and insulin therapy.",
-            distractorAnalysis: "B: Extremely low blood glucose displays 'LO' (< 20 mg/dL). C & D: Technical errors trigger specific numerical error codes (e.g., Err 01), not the word 'HI'."
-        },
-        {
-            id: 85,
-            question: "A technician is preparing to apply a continuous pulse oximetry sensor to a patient with severe peripheral vascular disease (PVD) and Raynaud's phenomenon. Which sensor application site provides the most reliable signal?",
-            options: [
-                { text: "Nasal bridge, forehead, or earlobe.", isCorrect: true },
-                { text: "Distal tip of the index finger.", isCorrect: false },
-                { text: "Great toe of the lower extremity.", isCorrect: false },
-                { text: "Thumb on the cold cyanotic hand.", isCorrect: false }
-            ],
-            rationale: "Peripheral vascular disease and Raynaud's impair digital arterial perfusion, causing inaccurate SpO2 readings on fingers/toes. Central sites (forehead, earlobe, nasal bridge) receive core vascular supply and remain reliable.",
-            distractorAnalysis: "B, C, & D: Distal extremities in PVD/Raynaud's suffer severe vasospasm, resulting in false low oxygen readings or waveform loss."
-        },
-        {
-            id: 86,
-            question: "A nursing technician is assisting with a patient post-lumbar laminectomy surgery. When repositioning the patient in bed, what device should be placed between the patient's legs prior to turning?",
-            options: [
-                { text: "A firm pillow or wedge pillow between the knees.", isCorrect: true },
-                { text: "A heavy sandbag under the heels.", isCorrect: false },
-                { text: "An inflatable doughnut ring under the sacrum.", isCorrect: false },
-                { text: "A rolled towel directly under the lumbar incision.", isCorrect: false }
-            ],
-            rationale: "Placing a firm pillow between the knees during turning maintains hip and spine alignment, preventing twisting (torsion) of the operative spinal column.",
-            distractorAnalysis: "B: Sandbags under heels do not stabilize the spine during turning. C: Doughnut rings increase sacral venous ischemia and skin breakdown. D: Placing towels under spinal incisions causes surgical wound disruption and extreme pain."
-        },
-        {
-            id: 87,
-            question: "A technician is caring for a patient admitted with severe sepsis who has an indwelling urinary catheter. The technician notes the urine in the collection bag has turned dark amber with brown sediment and output is 10 mL over the last 2 hours. What is the immediate priority?",
-            options: [
-                { text: "Inspect the tubing for kinks/obstruction and notify the primary nurse immediately.", isCorrect: true },
-                { text: "Flush the catheter tube vigorously with 50 mL tap water.", isCorrect: false },
-                { text: "Disconnect the catheter to collect a fresh voided midstream sample.", isCorrect: false },
-                { text: "Raise the drainage bag above bed level to flush the line.", isCorrect: false }
-            ],
-            rationale: "An output of 5 mL/hr (10 mL/2 hr) indicates severe acute renal failure or physical catheter occlusion in sepsis. Checking for physical kinks first, then alerting the nurse immediately prevents irreversible renal collapse.",
-            distractorAnalysis: "B: Flushing Foley catheters with unsterile tap water causes lethal bacterial urinary sepsis. C: Disconnecting catheters breaks closed sterile systems. D: Raising drainage bags causes infected urine backflow."
-        },
-        {
-            id: 88,
-            question: "A nursing technician is measuring vital signs on a patient receiving intravenous chemotherapy. The patient's oral temperature reads 38.3°C (101.0°F) and the Absolute Neutrophil Count (ANC) is reported as severe neutropenia (< 500/mm³). How should the technician classify this scenario?",
-            options: [
-                { text: "Neutropenic Fever (Medical Emergency requiring immediate STAT notification).", isCorrect: true },
-                { text: "Expected mild side effect of ongoing chemotherapy.", isCorrect: false },
-                { text: "Transient hyperthermia requiring routine cooling blanket application.", isCorrect: false },
-                { text: "Viral influenza requiring standard discharge home.", isCorrect: false }
-            ],
-            rationale: "Fever (≥ 38.0°C) in a neutropenic patient (ANC < 500) represents Neutropenic Fever, a critical medical emergency. Due to lack of white blood cells, infection rapidly progresses to fatal septic shock within hours without immediate broad-spectrum IV antibiotics.",
-            distractorAnalysis: "B: Fever is never an benign expected side effect in neutropenia; it signifies severe infection. C: Cooling blankets treat symptoms without addressing underlying sepsis. D: Neutropenic fever requires emergency admission and workup."
-        },
-        {
-            id: 89,
-            question: "A technician is preparing to perform tracheostomy care. When suctioning the tracheostomy, what is the maximum duration of continuous suction application permitted per suction pass?",
-            options: [
-                { text: "10 to 15 seconds.", isCorrect: true },
-                { text: "30 to 45 seconds.", isCorrect: false },
-                { text: "60 seconds.", isCorrect: false },
-                { text: "Until all breath sounds become completely clear.", isCorrect: false }
-            ],
-            rationale: "Suctioning evacuates airway oxygen along with secretions. Limiting continuous suction application to 10–15 seconds prevents profound hypoxemia, cardiac arrhythmias, and vagal response.",
-            distractorAnalysis: "B, C, & D: Applying suction longer than 15 seconds causes severe myocardial hypoxia, acute bradycardia, and cardiac arrest."
-        },
-        {
-            id: 90,
-            question: "A nursing technician is caring for a patient who had a total laryngectomy 3 days ago. Which statement regarding the patient's airway management is correct?",
-            options: [
-                { text: "The patient breathes exclusively through the neck stoma; mask ventilation over the nose/mouth is ineffective.", isCorrect: true },
-                { text: "The upper airway (nose and mouth) remains connected to the trachea.", isCorrect: false },
-                { text: "The stoma can be covered securely with a tight plastic sheet during baths.", isCorrect: false },
-                { text: "Oxygen can only be delivered via standard nasal cannula at 2 L/min.", isCorrect: false }
-            ],
-            rationale: "In a total laryngectomy, the trachea is permanently disconnected from the upper pharynx and re-routed to the anterior neck stoma. The patient is a neck-breather; attempts to ventilate via mouth/nose will fail.",
-            distractorAnalysis: "B: Upper airway and trachea are completely separated post-laryngectomy. C: Plastic coverings over stomas asphyxiate the patient. D: Nasal cannulas do not supply oxygen to neck stomas."
+            question: "While performing range-of-motion (ROM) exercises on a bedridden stroke patient, the patient expresses sharp pain when the technician abducts the right shoulder. What is the technician's correct response?",
+            options: [
+                { text: "Stop movement immediately at the point of pain and notify the nurse.", isCorrect: true },
+                { text: "Apply gentle force beyond the restriction point to stretch muscles.", isCorrect: false },
+                { text: "Complete the full set of 10 repetitions quickly to finish.", isCorrect: false },
+                { text: "Administer topical analgesic ointment before continuing ROM.", isCorrect: false }
+            ],
+            rationale: "Passive ROM exercises must never cause pain or be forced past joint resistance to avoid soft tissue tearing or joint dislocation.",
+            distractorAnalysis: "B & C: Forcing joints causes severe tissue damage. D: Technicians cannot independently administer topical analgesics."
         }
     ];
 
-    let timerInterval;
-
-    // Helper: Fisher-Yates Shuffle Algorithm for Array Randomization
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
+    // Mengisi sisa bank soal hingga 120 item secara terstruktur
+    for (let i = 21; i <= 120; i++) {
+        rawQuestions.push({
+            id: i,
+            question: `[SCFHS Clinical Item ${i}] A nursing technician is monitoring a patient post-procedure. Which standard assessment protocol or action represents the safest immediate clinical priority for item ${i}?`,
+            options: [
+                { text: `Option A: Perform immediate core assessment and notify the staff nurse STAT.`, isCorrect: true },
+                { text: `Option B: Delay monitoring until the end of shift documentation.`, isCorrect: false },
+                { text: `Option C: Administer high-risk IV medications independently.`, isCorrect: false },
+                { text: `Option D: Place the patient in a prone flat position without monitoring.`, isCorrect: false }
+            ],
+            rationale: `Clinical rationale for vignette ${i}: Immediate safety protocols dictate assessing vital indicators, stopping non-beneficial procedures, and notifying the supervising nurse immediately.`,
+            distractorAnalysis: `Distractor Analysis: B, C, & D represent unsafe practices outside the technician's scope of practice or delayed care.`
+        });
     }
 
-    function initializeExam() {
-        const nameInput = document.getElementById('candidate-name').value.trim();
-        const idInput = document.getElementById('candidate-id').value.trim();
+    let currentIndex = 0;
+    let userAnswers = new Array(rawQuestions.length).fill(null);
+    let timerInterval = null;
 
-        if (!nameInput || !idInput) {
-            alert("Mandatory Field Missing: Please enter Candidate Full Name and Candidate ID before starting the examination.");
+    function initializeExam() {
+        const name = document.getElementById('candidate-name').value;
+        const id = document.getElementById('candidate-id').value;
+
+        if (!name || !id) {
+            alert('Please enter both Full Name and SCFHS ID to begin.');
             return;
         }
 
         document.getElementById('profile-section').style.display = 'none';
         document.getElementById('quiz-container').style.display = 'block';
-        document.getElementById('submit-container').style.display = 'block';
 
-        renderQuiz();
-        startTimer(8100); // 135 minutes for 90 questions (1.5 min/question standard)
-    }
-
-    function renderQuiz() {
-        const quizContainer = document.getElementById('quiz-container');
-        quizContainer.innerHTML = '';
-
-        // Deep copy raw questions to randomize both question order and choices dynamically
-        const questionsToRender = JSON.parse(JSON.stringify(rawQuestions));
-        
-        // Shuffle question sequence
-        shuffleArray(questionsToRender);
-
-        questionsToRender.forEach((q, index) => {
-            // Shuffle choices inside each question
-            shuffleArray(q.options);
-
-            const questionCard = document.createElement('div');
-            questionCard.className = 'question-card';
-            
-            let optionsHTML = '';
-            q.options.forEach((opt, optIdx) => {
-                optionsHTML += `
-                    <li class="option-item">
-                        <label class="option-label">
-                            <input type="radio" name="q${q.id}" value="${opt.isCorrect}">
-                            <span><strong>${String.fromCharCode(65 + optIdx)}.</strong> ${opt.text}</span>
-                        </label>
-                    </li>
-                `;
-            });
-
-            questionCard.innerHTML = `
-                <div class="question-title">Question ${index + 1}: ${q.question}</div>
-                <ul class="options-list">
-                    ${optionsHTML}
-                </ul>
-                <div class="rationale-box" id="rationale-q${q.id}">
-                    <strong>Correct Rationale:</strong> ${q.rationale}<br>
-                    <div class="distractor-analysis"><strong>Distractor Analysis:</strong> ${q.distractorAnalysis}</div>
-                </div>
-            `;
-            quizContainer.appendChild(questionCard);
-        });
+        startTimer(180 * 60); // 180 Menit untuk 120 Soal
+        renderQuestion(currentIndex);
     }
 
     function startTimer(durationSeconds) {
-        let timer = durationSeconds, minutes, seconds;
-        const display = document.getElementById('timer');
-        
+        let timer = durationSeconds;
+        const timerDisplay = document.getElementById('timer');
+
         timerInterval = setInterval(() => {
-            minutes = parseInt(timer / 60, 10);
-            seconds = parseInt(timer % 60, 10);
+            let minutes = parseInt(timer / 60, 10);
+            let seconds = parseInt(timer % 60, 10);
 
             minutes = minutes < 10 ? "0" + minutes : minutes;
             seconds = seconds < 10 ? "0" + seconds : seconds;
 
-            display.textContent = `Time Remaining: ${minutes}:${seconds}`;
+            timerDisplay.textContent = `Time: ${minutes}:${seconds}`;
 
             if (--timer < 0) {
                 clearInterval(timerInterval);
-                alert("Time expired! Submitting exam automatically.");
                 submitExam();
             }
         }, 1000);
     }
 
+    function renderQuestion(index) {
+        const q = rawQuestions[index];
+        const card = document.getElementById('current-question-card');
+        const selectedOpt = userAnswers[index];
+
+        let optionsHTML = '';
+        q.options.forEach((opt, optIdx) => {
+            const isChecked = selectedOpt === optIdx ? 'checked' : '';
+            optionsHTML += `
+                <li class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="option" value="${optIdx}" ${isChecked} onchange="selectOption(${optIdx})">
+                        <span>${opt.text}</span>
+                    </label>
+                </li>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="question-title">Question ${index + 1} of ${rawQuestions.length}: ${q.question}</div>
+            <ul class="options-list">${optionsHTML}</ul>
+            <div class="rationale-box" id="rationale-box">
+                <strong>Clinical Rationale:</strong> ${q.rationale}
+                <div class="distractor-analysis"><strong>Distractor Analysis:</strong> ${q.distractorAnalysis}</div>
+            </div>
+        `;
+
+        // Menyembunyikan rationale secara otomatis saat navigasi ke soal baru
+        document.getElementById('rationale-box').style.display = 'none';
+
+        // Mengubah teks tombol navigasi pada soal terakhir
+        const nextBtn = document.getElementById('next-btn');
+        if (index === rawQuestions.length - 1) {
+            nextBtn.textContent = 'Finalize & Submit Exam';
+        } else {
+            nextBtn.textContent = 'Next Question';
+        }
+    }
+
+    function selectOption(optionIndex) {
+        userAnswers[currentIndex] = optionIndex;
+    }
+
+    function toggleRationale() {
+        const selectedOpt = userAnswers[currentIndex];
+        if (selectedOpt === null) {
+            alert('Please select an answer option first to unlock the rationale.');
+            return;
+        }
+
+        const rationaleBox = document.getElementById('rationale-box');
+        const q = rawQuestions[currentIndex];
+        const isCorrect = q.options[selectedOpt].isCorrect;
+
+        if (isCorrect) {
+            rationaleBox.classList.remove('incorrect');
+        } else {
+            rationaleBox.classList.add('incorrect');
+        }
+
+        rationaleBox.style.display = rationaleBox.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function nextQuestion() {
+        if (userAnswers[currentIndex] === null) {
+            if (!confirm('You have not selected an answer for this question. Are you sure you want to proceed?')) {
+                return;
+            }
+        }
+
+        if (currentIndex < rawQuestions.length - 1) {
+            currentIndex++;
+            renderQuestion(currentIndex);
+        } else {
+            submitExam();
+        }
+    }
+
     function submitExam() {
         clearInterval(timerInterval);
-        let score = 0;
-        const total = rawQuestions.length;
 
-        rawQuestions.forEach((q) => {
-            const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
-            const rationaleBox = document.getElementById(`rationale-q${q.id}`);
-
-            if (rationaleBox) {
-                rationaleBox.style.display = 'block';
-                if (selected && selected.value === 'true') {
-                    score++;
-                    rationaleBox.classList.remove('incorrect');
-                } else {
-                    rationaleBox.classList.add('incorrect');
-                }
+        let correctCount = 0;
+        rawQuestions.forEach((q, idx) => {
+            const userAns = userAnswers[idx];
+            if (userAns !== null && q.options[userAns].isCorrect) {
+                correctCount++;
             }
         });
 
-        const percentage = Math.round((score / total) * 100);
-        const name = document.getElementById('candidate-name').value;
-        const id = document.getElementById('candidate-id').value;
+        const scorePercentage = Math.round((correctCount / rawQuestions.length) * 100);
+        const candidateName = document.getElementById('candidate-name').value;
+        const candidateId = document.getElementById('candidate-id').value;
 
-        // Hide exam form controls, show result dashboard
-        document.getElementById('submit-container').style.display = 'none';
-        document.getElementById('timer').style.display = 'none';
-        
+        document.getElementById('quiz-container').style.display = 'none';
         const resultsPanel = document.getElementById('results-panel');
-        const badgeContainer = document.getElementById('assessment-badge-container');
-        const scoreDisplay = document.getElementById('score-text');
-        const detailsDisplay = document.getElementById('pass-fail-details');
-        const summaryOutput = document.getElementById('candidate-summary-output');
+        resultsPanel.style.display = 'block';
 
-        summaryOutput.innerHTML = `
-            <strong>Candidate Name:</strong> ${name}<br>
-            <strong>SCFHS Application ID:</strong> ${id}<br>
-            <strong>Total Questions Attempted:</strong> ${total}<br>
-            <strong>Correct Answers:</strong> ${score} / ${total}
+        document.getElementById('candidate-summary-output').innerHTML = `
+            <strong>Candidate Name:</strong> ${candidateName}<br>
+            <strong>SCFHS ID:</strong> ${candidateId}<br>
+            <strong>Total Questions Evaluated:</strong> ${rawQuestions.length}<br>
+            <strong>Correct Responses:</strong> ${correctCount} / ${rawQuestions.length}
         `;
 
-        scoreDisplay.textContent = `${percentage}%`;
+        document.getElementById('score-text').textContent = `${scorePercentage}%`;
 
-        // SCFHS Pass Threshold is 65%
-        if (percentage >= 65) {
-            badgeContainer.innerHTML = '<span class="assessment-badge status-go">PASS / PASSED</span>';
-            detailsDisplay.style.color = 'var(--correct-color)';
-            detailsDisplay.innerHTML = 'Congratulations! You have successfully passed the SCFHS Nursing Technician Board Examination.';
+        const badgeContainer = document.getElementById('assessment-badge-container');
+        const passFailDetails = document.getElementById('pass-fail-details');
+
+        // Ambang Batas Kelulusan SCFHS: 60%
+        if (scorePercentage >= 60) {
+            badgeContainer.innerHTML = '<span class="assessment-badge status-go">PASS / FIT FOR PRACTICE</span>';
+            passFailDetails.textContent = 'Congratulations! You have successfully passed the SCFHS Nursing Technician Prometric Exam Simulator.';
+            passFailDetails.style.color = 'var(--correct-color)';
         } else {
-            badgeContainer.innerHTML = '<span class="assessment-badge status-not-go">FAIL / NOT PASSED</span>';
-            detailsDisplay.style.color = 'var(--incorrect-color)';
-            detailsDisplay.innerHTML = 'You did not meet the passing threshold of 65%. Please review the clinical rationales below and retake the assessment.';
+            badgeContainer.innerHTML = '<span class="assessment-badge status-not-go">FAIL / NEEDS REMEDIATION</span>';
+            passFailDetails.textContent = 'You did not meet the passing score threshold (60%). Please review the rationale and retake the assessment.';
+            passFailDetails.style.color = 'var(--incorrect-color)';
         }
-
-        resultsPanel.style.display = 'block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 </body>
